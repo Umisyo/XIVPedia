@@ -1,25 +1,28 @@
 import { Marked } from 'marked';
-import { createHighlighter, type Highlighter } from 'shiki';
+import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+import vitesseDark from 'shiki/themes/vitesse-dark.mjs';
 
-let highlighterPromise: Promise<Highlighter> | null = null;
+let highlighterPromise: Promise<HighlighterCore> | null = null;
 
-function getHighlighter(): Promise<Highlighter> {
+function getHighlighter(): Promise<HighlighterCore> {
 	if (!highlighterPromise) {
-		highlighterPromise = createHighlighter({
-			themes: ['vitesse-dark'],
+		highlighterPromise = createHighlighterCore({
+			themes: [vitesseDark],
 			langs: [
-				'javascript',
-				'typescript',
-				'html',
-				'css',
-				'json',
-				'markdown',
-				'bash',
-				'yaml',
-				'xml',
-				'python',
-				'lua',
+				import('shiki/langs/javascript.mjs'),
+				import('shiki/langs/typescript.mjs'),
+				import('shiki/langs/html.mjs'),
+				import('shiki/langs/css.mjs'),
+				import('shiki/langs/json.mjs'),
+				import('shiki/langs/markdown.mjs'),
+				import('shiki/langs/bash.mjs'),
+				import('shiki/langs/yaml.mjs'),
+				import('shiki/langs/xml.mjs'),
+				import('shiki/langs/python.mjs'),
+				import('shiki/langs/lua.mjs'),
 			],
+			engine: createJavaScriptRegexEngine(),
 		});
 	}
 	return highlighterPromise;
