@@ -1,0 +1,20 @@
+---
+import { ArticleEditor } from '../../components/editor/ArticleEditor';
+import Layout from '../../layouts/Layout.astro';
+import { listTags } from '../../lib/tags';
+
+const { currentUser } = Astro.locals;
+
+if (!currentUser) {
+	return Astro.redirect('/login');
+}
+
+const tags = await listTags(Astro.locals.db);
+---
+
+<Layout title="記事を作成">
+	<div class="py-4">
+		<h1 class="text-2xl font-bold mb-6">記事を作成</h1>
+		<ArticleEditor client:load mode="new" tags={tags} />
+	</div>
+</Layout>

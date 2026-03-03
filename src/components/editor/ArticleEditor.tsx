@@ -1,0 +1,184 @@
+import { Save, Send } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { TagInfo } from '@/lib/tags';
+import { ImageUploader } from './ImageUploader';
+import { MarkdownPreview } from './MarkdownPreview';
+import { TagSelector } from './TagSelector';
+
+interface ArticleData {
+	id: string;
+	title: string;
+	slug: string;
+	body: string;
+	status: string;
+	tags: TagInfo[];
+}
+
+interface ArticleEditorProps {
+	mode: 'new' | 'edit';
+	tags: TagInfo[];
+	article?: ArticleData;
+}
+
+export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
+	const [title, setTitle] = useState(article?.title ?? '');
+	const [body, setBody] = useState(article?.body ?? '');
+	const [selectedTags, setSelectedTags] = useState<string[]>(article?.tags.map((t) => t.id) ?? []);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errors, setErrors] = useState<Record<string, string[]>>({});
+	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+
+	const handleImageInsert = useCallback((markdown: string) => {
+		setBody((prev) => `${prev}\n${markdown}\n`);
+	}, []);
+
+	async function handleSubmit(status: 'draft' | 'published') {
+		setErrors({});
+		setIsSubmitting(true);
+
+		try {
+			const payload = { title, body, tags: selectedTags, status };
+
+			const url = mode === 'new' ? '/api/articles' : `/api/articles/${article?.slug}`;
+			const method = mode === 'new' ? 'POST' : 'PUT';
+
+			const res = await fetch(url, {
+				method,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+
+			if (!res.ok) {
+				const json = await res.json();
+				const errBody = json?.error;
+				if (errBody?.details) {
+					setErrors(errBody.details);
+				} else {
+					setErrors({ _: [errBody?.message ?? '保存に失敗しました'] });
+				}
+				return;
+			}
+
+			const { data } = await res.json();
+			window.location.href = `/articles/${data.slug}`;
+		} catch {
+			setErrors({ _: ['ネットワークエラーが発生しました'] });
+		} finally {
+			setIsSubmitting(false);
+		}
+	}
+
+	return (
+		<div className="space-y-6">
+			{/* Global errors */}
+			{errors._ && (
+				<div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+					{errors._.map((msg) => (
+						<p key={msg}>{msg}</p>
+					))}
+				</div>
+			)}
+
+			{/* Title */}
+			<div className="space-y-2">
+				<Label htmlFor="title">タイトル</Label>
+				<Input
+					id="title"
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
+					placeholder="記事のタイトル"
+					maxLength={100}
+					aria-invalid={!!errors.title}
+				/>
+				{errors.title && <p className="text-sm text-destructive">{errors.title[0]}</p>}
+				<p className="text-xs text-muted-foreground text-right">{title.length}/100</p>
+			</div>
+
+			{/* Tags */}
+			<TagSelector tags={tags} selectedIds={selectedTags} onChange={setSelectedTags} />
+			{errors.tags && <p className="text-sm text-destructive">{errors.tags[0]}</p>}
+
+			{/* Editor / Preview */}
+			<div className="space-y-2">
+				<Label>本文</Label>
+
+				{/* Mobile tab switcher */}
+				<div className="flex gap-1 md:hidden">
+					<button
+						type="button"
+						onClick={() => setActiveTab('edit')}
+						className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							activeTab === 'edit'
+								? 'bg-secondary text-foreground'
+								: 'text-muted-foreground hover:text-foreground'
+						}`}
+					>
+						エディター
+					</button>
+					<button
+						type="button"
+						onClick={() => setActiveTab('preview')}
+						className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+							activeTab === 'preview'
+								? 'bg-secondary text-foreground'
+								: 'text-muted-foreground hover:text-foreground'
+						}`}
+					>
+						プレビュー
+					</button>
+				</div>
+
+				{/* Two-column layout (desktop) / Tab content (mobile) */}
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+					<div className={activeTab !== 'edit' ? 'hidden md:block' : ''}>
+						<textarea
+							value={body}
+							onChange={(e) => setBody(e.target.value)}
+							placeholder="Markdown で記事を書く..."
+							className="h-[500px] w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none font-mono dark:bg-input/30"
+							aria-invalid={!!errors.body}
+						/>
+						{errors.body && <p className="text-sm text-destructive mt-1">{errors.body[0]}</p>}
+						<p className="text-xs text-muted-foreground text-right mt-1">
+							{body.length.toLocaleString()}/50,000
+						</p>
+					</div>
+					<div
+						className={`rounded-md border border-border p-4 overflow-y-auto h-[500px] ${
+							activeTab !== 'preview' ? 'hidden md:block' : ''
+						}`}
+					>
+						{body ? (
+							<MarkdownPreview body={body} />
+						) : (
+							<p className="text-sm text-muted-foreground">プレビューがここに表示されます</p>
+						)}
+					</div>
+				</div>
+			</div>
+
+			{/* Image uploader */}
+			<ImageUploader onInsert={handleImageInsert} />
+
+			{/* Submit buttons */}
+			<div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-border">
+				<Button
+					type="button"
+					variant="outline"
+					disabled={isSubmitting}
+					onClick={() => handleSubmit('draft')}
+				>
+					<Save className="h-4 w-4" />
+					下書き保存
+				</Button>
+				<Button type="button" disabled={isSubmitting} onClick={() => handleSubmit('published')}>
+					<Send className="h-4 w-4" />
+					公開する
+				</Button>
+			</div>
+		</div>
+	);
+}
