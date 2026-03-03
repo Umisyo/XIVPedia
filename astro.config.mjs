@@ -14,8 +14,14 @@ export default defineConfig({
 	integrations: [react()],
 	vite: {
 		plugins: [tailwindcss()],
+		resolve: {
+			conditions: ['workerd', 'worker', 'browser'],
+		},
 		ssr: {
 			external: ['node:crypto'],
+			resolve: {
+				conditions: ['workerd', 'worker', 'browser'],
+			},
 		},
 	},
 });
