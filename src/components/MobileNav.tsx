@@ -1,4 +1,4 @@
-import { Menu, X } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -39,6 +39,15 @@ export default function MobileNav({ user }: Props) {
 									投稿
 								</a>
 								<span className="text-foreground text-sm py-2">{user.displayName}</span>
+								<form method="POST" action="/api/auth/logout">
+									<button
+										type="submit"
+										className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2 w-full"
+									>
+										<LogOut size={16} />
+										ログアウト
+									</button>
+								</form>
 							</>
 						) : (
 							<a
