@@ -22,7 +22,14 @@ export async function GET(context: APIContext): Promise<Response> {
 		status = 'published';
 	}
 
-	const result = await listArticles(db, { page, limit, tag, status });
+	const validSorts = ['newest', 'popular'] as const;
+	const rawSort = params.get('sort');
+	const sort: (typeof validSorts)[number] =
+		rawSort && validSorts.includes(rawSort as (typeof validSorts)[number])
+			? (rawSort as (typeof validSorts)[number])
+			: 'newest';
+
+	const result = await listArticles(db, { page, limit, tag, status, sort });
 
 	return new Response(JSON.stringify(result), {
 		status: 200,

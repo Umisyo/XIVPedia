@@ -1,6 +1,6 @@
-import { and, count, desc, eq, inArray } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../db';
-import { articles, articleTags, profiles, tags } from '../db/schema';
+import { articles, articleTags, profiles, reactions, tags } from '../db/schema';
 import { generateSlug } from './slug';
 
 export interface ListArticlesOptions {
@@ -8,6 +8,7 @@ export interface ListArticlesOptions {
 	limit?: number;
 	tag?: string;
 	status?: 'draft' | 'published' | 'archived';
+	sort?: 'newest' | 'popular';
 }
 
 export interface CreateArticleData {
@@ -111,30 +112,66 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 
 	const where = and(...conditions);
 
-	const [totalResult, rows] = await Promise.all([
-		db.select({ total: count() }).from(articles).where(where),
-		db
+	const sort = options.sort ?? 'newest';
+
+	const selectFields = {
+		id: articles.id,
+		title: articles.title,
+		slug: articles.slug,
+		body: articles.body,
+		status: articles.status,
+		publishedAt: articles.publishedAt,
+		createdAt: articles.createdAt,
+		updatedAt: articles.updatedAt,
+		authorId: profiles.id,
+		authorUsername: profiles.username,
+		authorDisplayName: profiles.displayName,
+		authorAvatarUrl: profiles.avatarUrl,
+	};
+
+	const totalResult = await db.select({ total: count() }).from(articles).where(where);
+
+	let rows: {
+		id: string;
+		title: string;
+		slug: string;
+		body: string;
+		status: string;
+		publishedAt: Date | null;
+		createdAt: Date;
+		updatedAt: Date;
+		authorId: string | null;
+		authorUsername: string | null;
+		authorDisplayName: string | null;
+		authorAvatarUrl: string | null;
+	}[];
+
+	if (sort === 'popular') {
+		const reactionCount = sql<number>`count(${reactions.userId})`.as('reaction_count');
+
+		rows = await db
 			.select({
-				id: articles.id,
-				title: articles.title,
-				slug: articles.slug,
-				body: articles.body,
-				status: articles.status,
-				publishedAt: articles.publishedAt,
-				createdAt: articles.createdAt,
-				updatedAt: articles.updatedAt,
-				authorId: profiles.id,
-				authorUsername: profiles.username,
-				authorDisplayName: profiles.displayName,
-				authorAvatarUrl: profiles.avatarUrl,
+				...selectFields,
+				reactionCount,
 			})
+			.from(articles)
+			.leftJoin(profiles, eq(articles.authorId, profiles.id))
+			.leftJoin(reactions, eq(articles.id, reactions.articleId))
+			.where(where)
+			.groupBy(articles.id, profiles.id)
+			.orderBy(desc(reactionCount), desc(articles.publishedAt))
+			.limit(limit)
+			.offset(offset);
+	} else {
+		rows = await db
+			.select(selectFields)
 			.from(articles)
 			.leftJoin(profiles, eq(articles.authorId, profiles.id))
 			.where(where)
 			.orderBy(desc(articles.createdAt))
 			.limit(limit)
-			.offset(offset),
-	]);
+			.offset(offset);
+	}
 
 	const total = totalResult[0]?.total ?? 0;
 	const articleIds = rows.map((r) => r.id);

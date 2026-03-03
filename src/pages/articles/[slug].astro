@@ -1,5 +1,8 @@
 ---
+import { and, count as countFn, eq } from 'drizzle-orm';
 import ArticleContent from '../../components/ArticleContent.astro';
+import ReactionButton from '../../components/ReactionButton.tsx';
+import { reactions } from '../../db/schema';
 import Layout from '../../layouts/Layout.astro';
 import { getArticleBySlug } from '../../lib/articles';
 import { renderMarkdown } from '../../lib/markdown';
@@ -17,6 +20,25 @@ const description = article.body
 	.replace(/[#*`~>[\]()!_-]/g, '')
 	.replace(/\n/g, ' ')
 	.slice(0, 120);
+
+// リアクション数を取得
+const [reactionResult] = await Astro.locals.db
+	.select({ count: countFn() })
+	.from(reactions)
+	.where(eq(reactions.articleId, article.id));
+const reactionCount = reactionResult?.count ?? 0;
+
+// ログインユーザーのリアクション状態を取得
+const currentUser = Astro.locals.currentUser;
+let reacted = false;
+if (currentUser) {
+	const [userReaction] = await Astro.locals.db
+		.select({ articleId: reactions.articleId })
+		.from(reactions)
+		.where(and(eq(reactions.articleId, article.id), eq(reactions.userId, currentUser.id)))
+		.limit(1);
+	reacted = !!userReaction;
+}
 ---
 
 <Layout title={article.title} description={description}>
@@ -61,5 +83,15 @@ const description = article.body
 		</header>
 
 		<ArticleContent html={html} />
+
+		<div class="mt-8 flex justify-start">
+			<ReactionButton
+				client:load
+				slug={article.slug}
+				initialCount={reactionCount}
+				initialReacted={reacted}
+				isAuthenticated={!!currentUser}
+			/>
+		</div>
 	</article>
 </Layout>
