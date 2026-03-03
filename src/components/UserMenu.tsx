@@ -27,10 +27,7 @@ export default function UserMenu({ displayName }: Props) {
 				className="flex items-center gap-1 text-foreground text-sm hover:text-primary transition-colors"
 			>
 				{displayName}
-				<ChevronDown
-					size={16}
-					className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-				/>
+				<ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
 			</button>
 
 			{isOpen && (
