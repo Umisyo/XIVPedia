@@ -1,8 +1,8 @@
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
-	user: { displayName: string } | null;
+	user: { displayName: string; avatarUrl?: string } | null;
 }
 
 export default function MobileNav({ user }: Props) {
@@ -38,7 +38,28 @@ export default function MobileNav({ user }: Props) {
 								>
 									投稿
 								</a>
-								<span className="text-foreground text-sm py-2">{user.displayName}</span>
+								<div className="flex items-center gap-2 py-2">
+									{user.avatarUrl ? (
+										<img
+											src={user.avatarUrl}
+											alt=""
+											className="w-7 h-7 rounded-full object-cover"
+										/>
+									) : (
+										<div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+											<User size={14} className="text-muted-foreground" />
+										</div>
+									)}
+									<span className="text-foreground text-sm">{user.displayName}</span>
+								</div>
+								<a
+									href="/settings/profile"
+									className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"
+									onClick={() => setIsOpen(false)}
+								>
+									<Settings size={16} />
+									プロフィール設定
+								</a>
 								<form method="POST" action="/api/auth/logout">
 									<button
 										type="submit"

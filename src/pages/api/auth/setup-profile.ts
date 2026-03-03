@@ -39,7 +39,21 @@ export const POST: APIRoute = async (context) => {
 		return context.redirect('/onboarding?error=username_taken');
 	}
 
-	const avatarUrl = user.user_metadata?.avatar_url ?? null;
+	const rawAvatarUrl = formData.get('avatarUrl')?.toString()?.trim() || null;
+	let customAvatarUrl: string | null = null;
+	if (rawAvatarUrl) {
+		try {
+			const parsed = new URL(rawAvatarUrl);
+			if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+				customAvatarUrl = rawAvatarUrl;
+			}
+		} catch {
+			if (rawAvatarUrl.startsWith('/api/images/')) {
+				customAvatarUrl = rawAvatarUrl;
+			}
+		}
+	}
+	const avatarUrl = customAvatarUrl || user.user_metadata?.avatar_url || null;
 
 	await db.insert(profiles).values({
 		id: user.id,
