@@ -1,0 +1,23 @@
+---
+import { OnboardingForm } from '../components/auth/OnboardingForm';
+import Layout from '../layouts/Layout.astro';
+
+const currentUser = Astro.locals.currentUser;
+
+if (!currentUser) {
+	return Astro.redirect('/login');
+}
+
+if (currentUser.profile) {
+	return Astro.redirect('/');
+}
+
+const error = Astro.url.searchParams.get('error') ?? undefined;
+
+const { data: { user } } = await Astro.locals.supabase.auth.getUser();
+const defaultDisplayName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '';
+---
+
+<Layout title="プロフィール設定">
+	<OnboardingForm error={error} defaultDisplayName={defaultDisplayName} client:load />
+</Layout>
