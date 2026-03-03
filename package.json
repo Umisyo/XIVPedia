@@ -1,5 +1,6 @@
 {
 	"name": "xivpedia",
+	"packageManager": "pnpm@10.22.0",
 	"type": "module",
 	"version": "0.0.1",
 	"scripts": {
