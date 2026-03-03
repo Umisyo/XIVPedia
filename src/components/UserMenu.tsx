@@ -1,11 +1,12 @@
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
 	displayName: string;
+	avatarUrl?: string;
 }
 
-export default function UserMenu({ displayName }: Props) {
+export default function UserMenu({ displayName, avatarUrl }: Props) {
 	const [isOpen, setIsOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -24,18 +25,32 @@ export default function UserMenu({ displayName }: Props) {
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
-				className="flex items-center gap-1 text-foreground text-sm hover:text-primary transition-colors"
+				className="flex items-center gap-2 text-foreground text-sm hover:text-primary transition-colors"
 			>
+				{avatarUrl ? (
+					<img src={avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+				) : (
+					<div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+						<User size={14} className="text-muted-foreground" />
+					</div>
+				)}
 				{displayName}
 				<ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
 			</button>
 
 			{isOpen && (
 				<div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-50">
+					<a
+						href="/settings/profile"
+						className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors rounded-t-md"
+					>
+						<Settings size={16} />
+						プロフィール設定
+					</a>
 					<form method="POST" action="/api/auth/logout">
 						<button
 							type="submit"
-							className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors rounded-md"
+							className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors rounded-b-md"
 						>
 							<LogOut size={16} />
 							ログアウト

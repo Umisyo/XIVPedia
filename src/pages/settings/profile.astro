@@ -1,0 +1,22 @@
+---
+import { ProfileEditForm } from '../../components/settings/ProfileEditForm';
+import Layout from '../../layouts/Layout.astro';
+
+const currentUser = Astro.locals.currentUser;
+
+if (!currentUser) {
+	return Astro.redirect('/login');
+}
+
+if (!currentUser.profile) {
+	return Astro.redirect('/onboarding');
+}
+---
+
+<Layout title="プロフィール設定">
+	<ProfileEditForm
+		client:load
+		currentDisplayName={currentUser.profile.displayName}
+		currentAvatarUrl={currentUser.profile.avatarUrl ?? undefined}
+	/>
+</Layout>

@@ -34,6 +34,7 @@ const currentUser = Astro.locals.currentUser;
 							<UserMenu
 								client:load
 								displayName={currentUser.profile?.displayName ?? currentUser.email}
+								avatarUrl={currentUser.profile?.avatarUrl ?? undefined}
 							/>
 						</>
 					) : (
@@ -51,7 +52,10 @@ const currentUser = Astro.locals.currentUser;
 			<!-- Mobile Navigation -->
 			<MobileNav
 				client:load
-				user={currentUser ? { displayName: currentUser.profile?.displayName ?? currentUser.email } : null}
+				user={currentUser ? {
+					displayName: currentUser.profile?.displayName ?? currentUser.email,
+					avatarUrl: currentUser.profile?.avatarUrl ?? undefined,
+				} : null}
 			/>
 		</div>
 	</div>
