@@ -1,6 +1,6 @@
 import { and, count, desc, eq, inArray } from 'drizzle-orm';
 import type { Database } from '../db';
-import { articles, articleTags, tags, users } from '../db/schema';
+import { articles, articleTags, profiles, tags } from '../db/schema';
 import { generateSlug } from './slug';
 
 export interface ListArticlesOptions {
@@ -123,13 +123,13 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 				publishedAt: articles.publishedAt,
 				createdAt: articles.createdAt,
 				updatedAt: articles.updatedAt,
-				authorId: users.id,
-				authorUsername: users.username,
-				authorDisplayName: users.displayName,
-				authorAvatarUrl: users.avatarUrl,
+				authorId: profiles.id,
+				authorUsername: profiles.username,
+				authorDisplayName: profiles.displayName,
+				authorAvatarUrl: profiles.avatarUrl,
 			})
 			.from(articles)
-			.leftJoin(users, eq(articles.authorId, users.id))
+			.leftJoin(profiles, eq(articles.authorId, profiles.id))
 			.where(where)
 			.orderBy(desc(articles.createdAt))
 			.limit(limit)
@@ -172,13 +172,13 @@ export async function getArticleBySlug(db: Database, slug: string): Promise<Arti
 			publishedAt: articles.publishedAt,
 			createdAt: articles.createdAt,
 			updatedAt: articles.updatedAt,
-			authorId: users.id,
-			authorUsername: users.username,
-			authorDisplayName: users.displayName,
-			authorAvatarUrl: users.avatarUrl,
+			authorId: profiles.id,
+			authorUsername: profiles.username,
+			authorDisplayName: profiles.displayName,
+			authorAvatarUrl: profiles.avatarUrl,
 		})
 		.from(articles)
-		.leftJoin(users, eq(articles.authorId, users.id))
+		.leftJoin(profiles, eq(articles.authorId, profiles.id))
 		.where(eq(articles.slug, slug))
 		.limit(1);
 
