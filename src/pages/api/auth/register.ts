@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async (context) => {
 	const { supabase } = context.locals;
+	const origin = new URL(context.request.url).origin;
 	const formData = await context.request.formData();
 	const email = formData.get('email')?.toString() ?? '';
 	const password = formData.get('password')?.toString() ?? '';
@@ -16,6 +17,7 @@ export const POST: APIRoute = async (context) => {
 				username,
 				display_name: displayName,
 			},
+			emailRedirectTo: `${origin}/api/auth/callback`,
 		},
 	});
 
