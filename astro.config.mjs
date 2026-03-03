@@ -9,4 +9,9 @@ export default defineConfig({
 			enabled: true,
 		},
 	}),
+	vite: {
+		ssr: {
+			external: ['node:crypto'],
+		},
+	},
 });
