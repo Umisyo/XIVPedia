@@ -1,0 +1,46 @@
+---
+import { ArticleEditor } from '../../../components/editor/ArticleEditor';
+import Layout from '../../../layouts/Layout.astro';
+import { getArticleBySlug } from '../../../lib/articles';
+import { listTags, type TagInfo } from '../../../lib/tags';
+
+const { currentUser } = Astro.locals;
+
+if (!currentUser) {
+	return Astro.redirect('/login');
+}
+
+const { slug } = Astro.params;
+const article = await getArticleBySlug(Astro.locals.db, slug ?? '');
+
+if (!article) {
+	return Astro.redirect('/404');
+}
+
+const isAuthor = currentUser.id === article.author.id;
+const isAdmin = currentUser.profile?.role === 'admin';
+
+if (!isAuthor && !isAdmin) {
+	if (article.status === 'draft') {
+		return Astro.redirect('/404');
+	}
+	return new Response(null, { status: 403, statusText: 'Forbidden' });
+}
+
+const tags = await listTags(Astro.locals.db);
+const articleData = {
+	id: article.id,
+	title: article.title,
+	slug: article.slug,
+	body: article.body,
+	status: article.status,
+	tags: article.tags as TagInfo[],
+};
+---
+
+<Layout title={`${article.title} を編集`}>
+	<div class="py-4">
+		<h1 class="text-2xl font-bold mb-6">記事を編集</h1>
+		<ArticleEditor client:load mode="edit" tags={tags} article={articleData} />
+	</div>
+</Layout>
