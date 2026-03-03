@@ -4,6 +4,8 @@ import { createDb } from './db';
 import { profiles } from './db/schema';
 import { createSupabaseClient } from './lib/supabase';
 
+const ONBOARDING_SKIP_PATHS = ['/onboarding', '/api/', '/login', '/register'];
+
 export const onRequest = defineMiddleware(async (context, next) => {
 	const env = context.locals.runtime.env;
 	context.locals.db = createDb(env.DATABASE_URL);
@@ -30,6 +32,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 			email: user.email ?? '',
 			profile: profile ?? null,
 		};
+
+		if (!profile) {
+			const path = context.url.pathname;
+			const shouldSkip = ONBOARDING_SKIP_PATHS.some((p) => path.startsWith(p));
+			if (!shouldSkip) {
+				return context.redirect('/onboarding');
+			}
+		}
 	} else {
 		context.locals.currentUser = null;
 	}
