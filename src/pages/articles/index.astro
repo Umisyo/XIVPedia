@@ -1,0 +1,177 @@
+---
+import ArticleCard from '../../components/ArticleCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import Layout from '../../layouts/Layout.astro';
+import { listArticles } from '../../lib/articles';
+import { listTags } from '../../lib/tags';
+
+const page = Math.max(1, Number(Astro.url.searchParams.get('page')) || 1);
+const sortParam = Astro.url.searchParams.get('sort');
+const sort = sortParam === 'popular' ? 'popular' : 'newest';
+const tag = Astro.url.searchParams.get('tag') || undefined;
+
+const { data: articles, meta } = await listArticles(Astro.locals.db, {
+	page,
+	limit: 12,
+	sort,
+	tag,
+	status: 'published',
+});
+
+const allTags = await listTags(Astro.locals.db);
+const totalPages = Math.ceil(meta.total / meta.limit);
+
+const selectedTag = tag ? allTags.find((t) => t.slug === tag) : undefined;
+const pageTitle = selectedTag ? `タグ: ${selectedTag.name}の記事` : '記事一覧';
+
+const baseUrl = `/articles?sort=${sort}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`;
+
+function sortUrl(sortValue: 'newest' | 'popular'): string {
+	return `/articles?sort=${sortValue}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`;
+}
+
+function tagUrl(tagSlug: string | null): string {
+	if (tagSlug) {
+		return `/articles?sort=${sort}&tag=${encodeURIComponent(tagSlug)}`;
+	}
+	return `/articles?sort=${sort}`;
+}
+
+const TAG_DISPLAY_LIMIT = 12;
+const showExpandButton = allTags.length > TAG_DISPLAY_LIMIT;
+---
+
+<Layout title={pageTitle} description={`XIVPedia - ${pageTitle}`}>
+	<section class="py-8">
+		<h1 class="text-3xl font-bold text-foreground">{pageTitle}</h1>
+
+		{/* Sort tabs and tag filter */}
+		<div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div class="flex items-center gap-2">
+				<a
+					href={sortUrl('newest')}
+					class:list={[
+						'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
+						sort === 'newest'
+							? 'bg-primary text-primary-foreground border-primary'
+							: 'bg-card text-muted-foreground border-border hover:text-foreground',
+					]}
+				>
+					新着順
+				</a>
+				<a
+					href={sortUrl('popular')}
+					class:list={[
+						'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
+						sort === 'popular'
+							? 'bg-primary text-primary-foreground border-primary'
+							: 'bg-card text-muted-foreground border-border hover:text-foreground',
+					]}
+				>
+					人気順
+				</a>
+			</div>
+		</div>
+
+		{/* Tag filter */}
+		{allTags.length > 0 && (
+			<div class="mt-4">
+				<div class="flex items-center gap-2 mb-2">
+					<span class="text-sm font-medium text-muted-foreground">タグ:</span>
+					{selectedTag && (
+						<a
+							href={tagUrl(null)}
+							class="inline-flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-0.5 text-xs text-destructive hover:bg-destructive/20 transition-colors"
+						>
+							クリア
+						</a>
+					)}
+				</div>
+				<div id="tag-list" class="flex flex-wrap gap-2">
+					{allTags.slice(0, TAG_DISPLAY_LIMIT).map((t) => (
+						<a
+							href={tagUrl(t.slug)}
+							class:list={[
+								'inline-block rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+								tag === t.slug
+									? 'bg-primary text-primary-foreground'
+									: 'bg-secondary text-muted-foreground hover:text-foreground',
+							]}
+						>
+							{t.name}
+						</a>
+					))}
+					{showExpandButton && (
+						<>
+							{allTags.slice(TAG_DISPLAY_LIMIT).map((t) => (
+								<a
+									href={tagUrl(t.slug)}
+									class:list={[
+										'tag-extra hidden rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+										tag === t.slug
+											? 'bg-primary text-primary-foreground'
+											: 'bg-secondary text-muted-foreground hover:text-foreground',
+									]}
+								>
+									{t.name}
+								</a>
+							))}
+							<button
+								id="tag-expand-btn"
+								type="button"
+								class="inline-block rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+							>
+								もっと見る
+							</button>
+						</>
+					)}
+				</div>
+			</div>
+		)}
+
+		{/* Article grid */}
+		{articles.length > 0 ? (
+			<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{articles.map((article) => (
+					<ArticleCard
+						title={article.title}
+						slug={article.slug}
+						author={article.author}
+						tags={article.tags}
+						publishedAt={article.publishedAt}
+						createdAt={article.createdAt}
+					/>
+				))}
+			</div>
+		) : (
+			<div class="mt-8 rounded-lg border border-border bg-card p-12 text-center">
+				<p class="text-muted-foreground">記事が見つかりませんでした</p>
+			</div>
+		)}
+
+		{/* Pagination */}
+		{totalPages > 1 && (
+			<div class="mt-8">
+				<Pagination
+					currentPage={page}
+					totalPages={totalPages}
+					baseUrl={baseUrl}
+				/>
+			</div>
+		)}
+	</section>
+</Layout>
+
+<script>
+	const expandBtn = document.getElementById('tag-expand-btn');
+	if (expandBtn) {
+		expandBtn.addEventListener('click', () => {
+			const extras = document.querySelectorAll('.tag-extra');
+			for (const el of extras) {
+				el.classList.remove('hidden');
+				el.classList.add('inline-block');
+			}
+			expandBtn.remove();
+		});
+	}
+</script>

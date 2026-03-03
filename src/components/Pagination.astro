@@ -1,0 +1,139 @@
+---
+interface Props {
+	currentPage: number;
+	totalPages: number;
+	baseUrl: string; // 例: "/articles?sort=newest&tag=extreme"
+}
+
+const { currentPage, totalPages, baseUrl } = Astro.props;
+
+function buildPageUrl(baseUrl: string, page: number): string {
+	const url = new URL(baseUrl, 'http://dummy');
+	url.searchParams.set('page', String(page));
+	return url.pathname + url.search;
+}
+
+function getPageNumbers(current: number, total: number): (number | '...')[] {
+	if (total <= 5) {
+		return Array.from({ length: total }, (_, i) => i + 1);
+	}
+
+	const pages: (number | '...')[] = [];
+
+	// Always include page 1
+	pages.push(1);
+
+	// Calculate the range around the current page
+	const rangeStart = Math.max(2, current - 1);
+	const rangeEnd = Math.min(total - 1, current + 1);
+
+	// Add ellipsis before range if needed
+	if (rangeStart > 2) {
+		pages.push('...');
+	}
+
+	// Add pages in range
+	for (let i = rangeStart; i <= rangeEnd; i++) {
+		pages.push(i);
+	}
+
+	// Add ellipsis after range if needed
+	if (rangeEnd < total - 1) {
+		pages.push('...');
+	}
+
+	// Always include last page
+	pages.push(total);
+
+	return pages;
+}
+
+const pageNumbers = getPageNumbers(currentPage, totalPages);
+const hasPrev = currentPage > 1;
+const hasNext = currentPage < totalPages;
+---
+
+{totalPages > 1 && (
+	<nav aria-label="ページネーション" class="flex items-center justify-center gap-1">
+		{/* 前へボタン */}
+		{hasPrev ? (
+			<a
+				href={buildPageUrl(baseUrl, currentPage - 1)}
+				class="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium
+					text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+				aria-label="前のページ"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span class="ml-1 hidden sm:inline">前へ</span>
+			</a>
+		) : (
+			<span
+				class="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium
+					text-muted-foreground opacity-50 pointer-events-none"
+				aria-disabled="true"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span class="ml-1 hidden sm:inline">前へ</span>
+			</span>
+		)}
+
+		{/* ページ番号 */}
+		{pageNumbers.map((page) =>
+			page === '...' ? (
+				<span class="inline-flex items-center justify-center size-9 text-sm text-muted-foreground">
+					...
+				</span>
+			) : page === currentPage ? (
+				<span
+					class="inline-flex items-center justify-center size-9 rounded-md text-sm font-medium
+						bg-primary text-primary-foreground"
+					aria-current="page"
+				>
+					{page}
+				</span>
+			) : (
+				<a
+					href={buildPageUrl(baseUrl, page)}
+					class="inline-flex items-center justify-center size-9 rounded-md text-sm font-medium
+						text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+				>
+					{page}
+				</a>
+			)
+		)}
+
+		{/* 次へボタン */}
+		{hasNext ? (
+			<a
+				href={buildPageUrl(baseUrl, currentPage + 1)}
+				class="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium
+					text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+				aria-label="次のページ"
+			>
+				<span class="mr-1 hidden sm:inline">次へ</span>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</a>
+		) : (
+			<span
+				class="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-medium
+					text-muted-foreground opacity-50 pointer-events-none"
+				aria-disabled="true"
+			>
+				<span class="mr-1 hidden sm:inline">次へ</span>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</span>
+		)}
+	</nav>
+)}
