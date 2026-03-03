@@ -27,13 +27,26 @@
 			"semicolons": "always"
 		}
 	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": false
+		},
+		"formatter": {
+			"enabled": false
+		}
+	},
 	"overrides": [
 		{
 			"includes": ["**/*.astro"],
 			"linter": {
 				"rules": {
 					"correctness": {
-						"noUnusedImports": "off"
+						"noUnusedImports": "off",
+						"noUnusedVariables": "off"
 					}
 				}
 			}
