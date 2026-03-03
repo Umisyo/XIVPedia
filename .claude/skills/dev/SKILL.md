@@ -18,7 +18,7 @@ Git ブランチと worktree の作成、エージェントチームによる並
 
 - **リポジトリ**: `Umisyo/XIVPedia`
 - **メインリポジトリ**: `/Users/souta.kusunoki/.ghr/github.com/Umisyo/XIVPedia`
-- **Worktree 配置先**: `/Users/souta.kusunoki/.ghr/github.com/yumemi/worktrees/<branch-name>`
+- **Worktree 配置先**: `/Users/souta.kusunoki/.ghr/github.com/Umisyo/worktrees/<branch-name>`
 - **CLAUDE.md**: プロジェクトルートの CLAUDE.md を参照（ブランチ命名規則、ラベル体系）
 - 各操作の実行前に**必ずユーザーに確認**すること
 
@@ -55,20 +55,20 @@ Issue に対応するブランチと worktree を作成する。
    ```
 5. Worktree を作成:
    ```bash
-   mkdir -p /Users/souta.kusunoki/.ghr/github.com/yumemi/worktrees/<branch-name>
-   git -C /Users/souta.kusunoki/.ghr/github.com/Umisyo/XIVPedia worktree add /Users/souta.kusunoki/.ghr/github.com/yumemi/worktrees/<branch-name> <branch-name>
+   mkdir -p /Users/souta.kusunoki/.ghr/github.com/Umisyo/worktrees/<branch-name>
+   git -C /Users/souta.kusunoki/.ghr/github.com/Umisyo/XIVPedia worktree add /Users/souta.kusunoki/.ghr/github.com/Umisyo/worktrees/<branch-name> <branch-name>
    ```
    - ブランチ名にスラッシュが含まれるため、`mkdir -p` でディレクトリ階層を事前作成
 6. メインリポジトリの `.env` が存在する場合、worktree にシンボリックリンクを作成:
    ```bash
-   ln -sf /Users/souta.kusunoki/.ghr/github.com/Umisyo/XIVPedia/.env /Users/souta.kusunoki/.ghr/github.com/yumemi/worktrees/<branch-name>/.env
+   ln -sf /Users/souta.kusunoki/.ghr/github.com/Umisyo/XIVPedia/.env /Users/souta.kusunoki/.ghr/github.com/Umisyo/worktrees/<branch-name>/.env
    ```
 7. 結果を表示:
    ```
    ✅ 開発環境セットアップ完了
      Issue:    #42 ユーザー認証機能を追加
      Branch:   feat/42-user-auth
-     Worktree: /Users/souta.kusunoki/.ghr/github.com/yumemi/worktrees/feat/42-user-auth
+     Worktree: /Users/souta.kusunoki/.ghr/github.com/Umisyo/worktrees/feat/42-user-auth
 
    以降の作業はこの worktree 内で実施してください。
    ```

@@ -73,12 +73,12 @@ gh label create "scope:infra" --color "F9D0C4" --description "インフラ" --fo
 既存の GitHub Project の情報を取得し、CLAUDE.md に記録する。
 
 **手順**:
-1. `gh project list --owner yumemi --format json` で Project 一覧を取得
+1. `gh project list --owner Umisyo --format json` で Project 一覧を取得
 2. ユーザーに使用する Project を選択してもらう
 3. 選択された Project の番号を確認
 4. Project の Field 情報を取得:
    ```bash
-   gh project field-list <PROJECT_NUMBER> --owner yumemi --format json
+   gh project field-list <PROJECT_NUMBER> --owner Umisyo --format json
    ```
 5. Status フィールドの ID と各 Option（Backlog, Todo, In Progress, In Review, Done）の ID を取得
 6. CLAUDE.md の以下の箇所を更新:
