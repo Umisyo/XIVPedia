@@ -1,7 +1,13 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
 	"files": {
-		"includes": ["**", "!**/.astro", "!**/dist", "!**/node_modules"]
+		"includes": ["**", "!**/.astro", "!**/dist", "!**/node_modules"],
+		"ignoreUnknown": true
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
 	},
 	"assist": {
 		"actions": {
@@ -33,7 +39,8 @@
 			"linter": {
 				"rules": {
 					"correctness": {
-						"noUnusedImports": "off"
+						"noUnusedImports": "off",
+						"noUnusedVariables": "off"
 					}
 				}
 			}

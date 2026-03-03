@@ -1,0 +1,56 @@
+---
+import MobileNav from './MobileNav.tsx';
+
+const currentUser = Astro.locals.currentUser;
+---
+
+<header class="bg-card border-b border-border sticky top-0 z-50">
+	<div class="container mx-auto px-4 max-w-4xl">
+		<div class="flex items-center justify-between h-14">
+			<!-- Logo -->
+			<a href="/" class="text-primary font-bold text-xl hover:opacity-80 transition-opacity">
+				XIVPedia
+			</a>
+
+			<!-- Desktop Navigation -->
+			<nav class="hidden md:flex items-center gap-6">
+				<a
+					href="/articles"
+					class="text-muted-foreground hover:text-foreground transition-colors"
+				>
+					記事一覧
+				</a>
+				{
+					currentUser ? (
+						<>
+							<a
+								href="/articles/new"
+								class="bg-primary text-primary-foreground px-4 py-2 rounded-md
+									text-sm font-medium hover:opacity-90 transition-opacity"
+							>
+								投稿
+							</a>
+							<span class="text-foreground text-sm">
+								{currentUser.displayName}
+							</span>
+						</>
+					) : (
+						<a
+							href="/api/auth/discord"
+							class="bg-primary text-primary-foreground px-4 py-2 rounded-md
+								text-sm font-medium hover:opacity-90 transition-opacity"
+						>
+							ログイン
+						</a>
+					)
+				}
+			</nav>
+
+			<!-- Mobile Navigation -->
+			<MobileNav
+				client:load
+				user={currentUser ? { displayName: currentUser.displayName } : null}
+			/>
+		</div>
+	</div>
+</header>
