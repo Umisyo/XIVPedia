@@ -1,0 +1,65 @@
+---
+import ArticleContent from '../../components/ArticleContent.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getArticleBySlug } from '../../lib/articles';
+import { renderMarkdown } from '../../lib/markdown';
+
+const { slug } = Astro.params;
+const article = await getArticleBySlug(Astro.locals.db, slug ?? '');
+
+if (!article || article.status !== 'published') {
+	return Astro.redirect('/404');
+}
+
+const html = await renderMarkdown(article.body);
+const displayDate = (article.publishedAt ?? article.createdAt).toLocaleDateString('ja-JP');
+const description = article.body
+	.replace(/[#*`~>[\]()!_-]/g, '')
+	.replace(/\n/g, ' ')
+	.slice(0, 120);
+---
+
+<Layout title={article.title} description={description}>
+	<article class="py-8 max-w-3xl mx-auto">
+		<header class="mb-8">
+			<h1 class="text-3xl font-bold text-foreground sm:text-4xl leading-tight">
+				{article.title}
+			</h1>
+
+			<div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+				<div class="flex items-center gap-2">
+					{article.author.avatarUrl ? (
+						<img
+							src={article.author.avatarUrl}
+							alt={article.author.displayName}
+							class="w-8 h-8 rounded-full"
+							loading="lazy"
+						/>
+					) : (
+						<span class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
+							{article.author.displayName.charAt(0)}
+						</span>
+					)}
+					<span class="font-medium text-foreground">
+						{article.author.displayName}
+					</span>
+				</div>
+				<time datetime={(article.publishedAt ?? article.createdAt).toISOString()}>
+					{displayDate}
+				</time>
+			</div>
+
+			{article.tags.length > 0 && (
+				<div class="mt-4 flex flex-wrap gap-2">
+					{article.tags.map((tag) => (
+						<span class="inline-block rounded-md bg-secondary px-2.5 py-1 text-xs text-muted-foreground">
+							{tag.name}
+						</span>
+					))}
+				</div>
+			)}
+		</header>
+
+		<ArticleContent html={html} />
+	</article>
+</Layout>

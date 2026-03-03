@@ -1,49 +1,45 @@
 ---
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
 import '../styles/global.css';
 
-const currentUser = Astro.locals.currentUser;
+interface Props {
+	title: string;
+	description?: string;
+	ogImage?: string;
+}
+
+const { title, description = 'FF14攻略共有サイト', ogImage } = Astro.props;
+const pageTitle = `${title} | XIVPedia`;
+const canonicalUrl = Astro.url.href;
 ---
 
 <!doctype html>
-<html lang="ja">
+<html lang="ja" class="dark">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>XIVPedia</title>
+		<meta name="description" content={description} />
+		<title>{pageTitle}</title>
+
+		<!-- OGP -->
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:type" content="website" />
+		{ogImage && <meta property="og:image" content={ogImage} />}
+		<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+		{ogImage && <meta name="twitter:image" content={ogImage} />}
 	</head>
-	<body>
-		<nav class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-				<a href="/" class="text-xl font-bold tracking-tight">XIVPedia</a>
-				<div class="flex items-center gap-4">
-					{currentUser ? (
-						<div class="flex items-center gap-4">
-							<span class="text-sm text-muted-foreground">
-								{currentUser.profile?.displayName ?? currentUser.email}
-							</span>
-							<form action="/api/auth/logout" method="POST">
-								<button
-									type="submit"
-									class="rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground hover:bg-secondary/80"
-								>
-									ログアウト
-								</button>
-							</form>
-						</div>
-					) : (
-						<a
-							href="/login"
-							class="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-						>
-							ログイン
-						</a>
-					)}
-				</div>
-			</div>
-		</nav>
-		<slot />
+	<body class="bg-background text-foreground min-h-screen flex flex-col">
+		<Header />
+		<main class="container mx-auto px-4 py-8 max-w-4xl flex-1">
+			<slot />
+		</main>
+		<Footer />
 	</body>
 </html>

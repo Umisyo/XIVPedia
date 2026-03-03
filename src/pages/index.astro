@@ -1,11 +1,45 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import ArticleCard from '../components/ArticleCard.astro';
 import Layout from '../layouts/Layout.astro';
+import { listArticles } from '../lib/articles';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { data: articles } = await listArticles(Astro.locals.db, {
+	limit: 10,
+	status: 'published',
+});
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト">
+	<section class="py-12 text-center">
+		<h1 class="text-4xl font-bold text-foreground sm:text-5xl">
+			XIVP<span class="text-primary">e</span>dia
+		</h1>
+		<p class="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
+			ユーザー投稿型のFF14攻略サイト。<br />
+			攻略情報を共有して、みんなで冒険をもっと楽しもう。
+		</p>
+	</section>
+
+	<section class="pb-16">
+		<h2 class="text-2xl font-bold text-foreground mb-6">最新の記事</h2>
+
+		{articles.length > 0 ? (
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{articles.map((article) => (
+					<ArticleCard
+						title={article.title}
+						slug={article.slug}
+						author={article.author}
+						tags={article.tags}
+						publishedAt={article.publishedAt}
+						createdAt={article.createdAt}
+					/>
+				))}
+			</div>
+		) : (
+			<div class="rounded-lg border border-border bg-card p-12 text-center">
+				<p class="text-muted-foreground">まだ記事がありません。</p>
+			</div>
+		)}
+	</section>
 </Layout>

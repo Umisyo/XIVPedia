@@ -6,12 +6,12 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
 	output: 'server',
+	integrations: [react()],
 	adapter: cloudflare({
 		platformProxy: {
 			enabled: true,
 		},
 	}),
-	integrations: [react()],
 	vite: {
 		plugins: [tailwindcss()],
 		resolve: {
