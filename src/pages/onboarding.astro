@@ -14,7 +14,9 @@ if (currentUser.profile) {
 
 const error = Astro.url.searchParams.get('error') ?? undefined;
 
-const { data: { user } } = await Astro.locals.supabase.auth.getUser();
+const {
+	data: { user },
+} = await Astro.locals.supabase.auth.getUser();
 const defaultDisplayName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '';
 ---
 
