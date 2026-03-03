@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # cloudflare
 .wrangler/
+
+# claude
+.mcp.json
