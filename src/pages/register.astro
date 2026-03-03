@@ -1,0 +1,15 @@
+---
+import { RegisterForm } from '../components/auth/RegisterForm';
+import Layout from '../layouts/Layout.astro';
+
+const currentUser = Astro.locals.currentUser;
+if (currentUser) {
+	return Astro.redirect('/');
+}
+
+const error = Astro.url.searchParams.get('error') ?? undefined;
+---
+
+<Layout title="アカウント登録">
+	<RegisterForm error={error} client:load />
+</Layout>

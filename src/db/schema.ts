@@ -1,20 +1,9 @@
-import {
-	boolean,
-	pgTable,
-	primaryKey,
-	text,
-	timestamp,
-	uniqueIndex,
-	uuid,
-} from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-// ユーザー
-export const users = pgTable('users', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	email: text('email').unique(),
-	passwordHash: text('password_hash'),
-	emailVerified: boolean('email_verified').default(false).notNull(),
-	username: text('username').notNull(),
+// ユーザープロフィール（Supabase auth.users と連携）
+export const profiles = pgTable('profiles', {
+	id: uuid('id').primaryKey(),
+	username: text('username').notNull().unique(),
 	displayName: text('display_name').notNull(),
 	avatarUrl: text('avatar_url'),
 	role: text('role', { enum: ['user', 'moderator', 'admin'] })
@@ -22,43 +11,6 @@ export const users = pgTable('users', {
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-// OAuth アカウント（複数プロバイダー対応）
-export const accounts = pgTable(
-	'accounts',
-	{
-		id: uuid('id').defaultRandom().primaryKey(),
-		userId: uuid('user_id')
-			.references(() => users.id, { onDelete: 'cascade' })
-			.notNull(),
-		provider: text('provider', { enum: ['discord', 'google'] }).notNull(),
-		providerAccountId: text('provider_account_id').notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-	},
-	(t) => [uniqueIndex('accounts_provider_account_idx').on(t.provider, t.providerAccountId)],
-);
-
-// メール確認トークン
-export const emailVerificationTokens = pgTable('email_verification_tokens', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: uuid('user_id')
-		.references(() => users.id, { onDelete: 'cascade' })
-		.notNull(),
-	token: text('token').notNull().unique(),
-	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// パスワードリセットトークン
-export const passwordResetTokens = pgTable('password_reset_tokens', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: uuid('user_id')
-		.references(() => users.id, { onDelete: 'cascade' })
-		.notNull(),
-	token: text('token').notNull().unique(),
-	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // タグ（FF14コンテンツカテゴリ）
@@ -78,7 +30,7 @@ export const articles = pgTable('articles', {
 	slug: text('slug').notNull().unique(),
 	body: text('body').notNull(),
 	authorId: uuid('author_id')
-		.references(() => users.id)
+		.references(() => profiles.id)
 		.notNull(),
 	status: text('status', { enum: ['draft', 'published', 'archived'] })
 		.default('draft')
@@ -110,7 +62,7 @@ export const comments = pgTable('comments', {
 		.references(() => articles.id, { onDelete: 'cascade' })
 		.notNull(),
 	authorId: uuid('author_id')
-		.references(() => users.id)
+		.references(() => profiles.id)
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -124,7 +76,7 @@ export const reactions = pgTable(
 			.references(() => articles.id, { onDelete: 'cascade' })
 			.notNull(),
 		userId: uuid('user_id')
-			.references(() => users.id, { onDelete: 'cascade' })
+			.references(() => profiles.id, { onDelete: 'cascade' })
 			.notNull(),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 	},

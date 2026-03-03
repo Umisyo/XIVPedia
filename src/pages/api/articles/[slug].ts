@@ -35,7 +35,7 @@ export async function PUT(context: APIContext): Promise<Response> {
 		return notFound('Article not found');
 	}
 
-	if (currentUser.id !== article.author.id && currentUser.role !== 'admin') {
+	if (currentUser.id !== article.author.id && currentUser.profile?.role !== 'admin') {
 		return forbidden();
 	}
 
@@ -67,7 +67,7 @@ export async function DELETE(context: APIContext): Promise<Response> {
 		return notFound('Article not found');
 	}
 
-	if (currentUser.id !== article.author.id && currentUser.role !== 'admin') {
+	if (currentUser.id !== article.author.id && currentUser.profile?.role !== 'admin') {
 		return forbidden();
 	}
 

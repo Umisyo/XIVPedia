@@ -2,10 +2,8 @@
 
 type Env = {
 	DATABASE_URL: string;
-	DISCORD_CLIENT_ID: string;
-	DISCORD_CLIENT_SECRET: string;
-	DISCORD_REDIRECT_URI: string;
-	SESSION_SECRET: string;
+	SUPABASE_URL: string;
+	SUPABASE_PUBLISHABLE_KEY: string;
 	R2_BUCKET: R2Bucket;
 };
 
@@ -14,6 +12,17 @@ type Runtime = import('@astrojs/cloudflare').Runtime<Env>;
 declare namespace App {
 	interface Locals extends Runtime {
 		db: import('./db').Database;
-		currentUser: import('./lib/auth').AuthUser | null;
+		supabase: import('@supabase/supabase-js').SupabaseClient;
+		currentUser: {
+			id: string;
+			email: string;
+			profile: {
+				id: string;
+				username: string;
+				displayName: string;
+				avatarUrl: string | null;
+				role: 'user' | 'moderator' | 'admin';
+			} | null;
+		} | null;
 	}
 }

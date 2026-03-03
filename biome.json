@@ -4,11 +4,6 @@
 		"includes": ["**", "!**/.astro", "!**/dist", "!**/node_modules"],
 		"ignoreUnknown": true
 	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
-	},
 	"assist": {
 		"actions": {
 			"source": {
@@ -31,6 +26,18 @@
 		"formatter": {
 			"quoteStyle": "single",
 			"semicolons": "always"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": false
+		},
+		"formatter": {
+			"enabled": false
 		}
 	},
 	"overrides": [

@@ -42,7 +42,7 @@ export default function MobileNav({ user }: Props) {
 							</>
 						) : (
 							<a
-								href="/api/auth/discord"
+								href="/login"
 								className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity inline-block w-fit"
 								onClick={() => setIsOpen(false)}
 							>

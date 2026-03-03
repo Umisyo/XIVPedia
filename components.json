@@ -6,15 +6,18 @@
 	"tailwind": {
 		"config": "",
 		"css": "src/styles/global.css",
-		"baseColor": "zinc",
-		"cssVariables": true
+		"baseColor": "neutral",
+		"cssVariables": true,
+		"prefix": ""
 	},
+	"iconLibrary": "lucide",
+	"rtl": false,
 	"aliases": {
 		"components": "@/components",
-		"utils": "@/lib/cn",
+		"utils": "@/lib/utils",
 		"ui": "@/components/ui",
 		"lib": "@/lib",
 		"hooks": "@/hooks"
 	},
-	"iconLibrary": "lucide"
+	"registries": {}
 }
