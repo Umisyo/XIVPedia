@@ -33,6 +33,9 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+      wrangler:
+        specifier: ^4.14.0
+        version: 4.50.0(@cloudflare/workers-types@4.20260301.1)
 
 packages:
 
