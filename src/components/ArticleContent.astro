@@ -203,4 +203,117 @@ const { html, articleId, isLoggedIn = false } = Astro.props;
 	.article-content :global(em) {
 		font-style: italic;
 	}
+
+	/* FF14 Macro Block */
+	.article-content :global(.ffxiv-macro-block) {
+		margin-top: 1.25rem;
+		margin-bottom: 1.25rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--color-border);
+		overflow: hidden;
+		background-color: #1a1a2e;
+	}
+
+	.article-content :global(.ffxiv-macro-header) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 0.75rem;
+		background-color: #16213e;
+		border-bottom: 1px solid #0f3460;
+	}
+
+	.article-content :global(.ffxiv-macro-label) {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #e0c080;
+		letter-spacing: 0.05em;
+	}
+
+	.article-content :global(.ffxiv-macro-copy) {
+		font-size: 0.75rem;
+		padding: 0.25rem 0.625rem;
+		border-radius: 0.25rem;
+		border: 1px solid #0f3460;
+		background-color: #0f3460;
+		color: #a0b4d0;
+		cursor: pointer;
+		transition: background-color 0.15s, color 0.15s;
+	}
+
+	.article-content :global(.ffxiv-macro-copy:hover) {
+		background-color: #1a4080;
+		color: #e0e0e0;
+	}
+
+	.article-content :global(.ffxiv-macro-copy[data-copied="true"]) {
+		background-color: #2d5016;
+		border-color: #3d6b20;
+		color: #90d060;
+	}
+
+	.article-content :global(.ffxiv-macro-code) {
+		margin: 0 !important;
+		padding: 0.75rem 1rem !important;
+		background-color: #1a1a2e !important;
+		border: none !important;
+		border-radius: 0 !important;
+		font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+		font-size: 0.8125rem !important;
+		line-height: 1.7 !important;
+		overflow-x: auto;
+	}
+
+	.article-content :global(.ffxiv-macro-code code) {
+		background-color: transparent !important;
+		padding: 0 !important;
+		font-size: inherit !important;
+	}
+
+	.article-content :global(.ffxiv-macro-footer) {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0.375rem 0.75rem;
+		background-color: #16213e;
+		border-top: 1px solid #0f3460;
+	}
+
+	.article-content :global(.ffxiv-macro-line-count) {
+		font-size: 0.6875rem;
+		color: #6080a0;
+	}
+
+	.article-content :global(.macro-command) {
+		color: #7cacf8;
+		font-weight: 600;
+	}
+
+	.article-content :global(.macro-placeholder) {
+		color: #f0a050;
+	}
+
+	.article-content :global(.macro-text) {
+		color: #c8d0d8;
+	}
 </style>
+
+<script>
+	document.addEventListener('click', (e) => {
+		const target = e.target as HTMLElement;
+		if (!target.classList.contains('ffxiv-macro-copy')) return;
+
+		const macroText = target.getAttribute('data-macro-text');
+		if (!macroText) return;
+
+		navigator.clipboard.writeText(macroText).then(() => {
+			const originalText = target.textContent;
+			target.textContent = 'コピー済み';
+			target.setAttribute('data-copied', 'true');
+			setTimeout(() => {
+				target.textContent = originalText;
+				target.removeAttribute('data-copied');
+			}, 2000);
+		});
+	});
+</script>
