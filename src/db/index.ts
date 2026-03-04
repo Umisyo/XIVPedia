@@ -5,7 +5,7 @@ import * as schema from './schema';
 export function createDb(databaseUrl: string) {
 	const client = postgres(databaseUrl, {
 		prepare: false,
-		max: 1,
+		max: 5,
 	});
 	return drizzle(client, { schema });
 }
