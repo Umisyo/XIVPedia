@@ -57,7 +57,11 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 		return (
 			<NodeViewWrapper>
 				<div className="diagram-preview diagram-preview--error" contentEditable={false}>
-					<div className="diagram-preview-header">
+					<div
+						className="diagram-preview-header"
+						role="toolbar"
+						onMouseDown={(e) => e.preventDefault()}
+					>
 						<span className="diagram-preview-label">散開図 - エラー</span>
 						<button
 							type="button"
@@ -82,7 +86,11 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 				className={`diagram-preview${selected ? ' diagram-preview--selected' : ''}`}
 				contentEditable={false}
 			>
-				<div className="diagram-preview-header">
+				<div
+					className="diagram-preview-header"
+					role="toolbar"
+					onMouseDown={(e) => e.preventDefault()}
+				>
 					<span className="diagram-preview-label">散開図</span>
 					<div className="diagram-preview-actions">
 						<button
