@@ -1,4 +1,4 @@
-import { Save, Send } from 'lucide-react';
+import { Eye, Pen, Save, Send } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import type { TagInfo } from '@/lib/tags';
 import { ImageUploader } from './ImageUploader';
 import { MarkdownPreview } from './MarkdownPreview';
+import { RichTextEditor } from './RichTextEditor';
 import { TagSelector } from './TagSelector';
 
 interface ArticleData {
@@ -24,6 +25,8 @@ interface ArticleEditorProps {
 	article?: ArticleData;
 }
 
+type EditorMode = 'visual' | 'markdown';
+
 export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [title, setTitle] = useState(article?.title ?? '');
 	const [body, setBody] = useState(article?.body ?? '');
@@ -35,10 +38,23 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string[]>>({});
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+	const [editorMode, setEditorMode] = useState<EditorMode>('visual');
+	const [richEditorKey, setRichEditorKey] = useState(0);
 
 	const handleImageInsert = useCallback((markdown: string) => {
 		setBody((prev) => `${prev}\n${markdown}\n`);
 	}, []);
+
+	const handleEditorModeChange = useCallback(
+		(newMode: EditorMode) => {
+			if (newMode === editorMode) return;
+			if (newMode === 'visual') {
+				setRichEditorKey((prev) => prev + 1);
+			}
+			setEditorMode(newMode);
+		},
+		[editorMode],
+	);
 
 	async function handleSubmit(status: 'draft' | 'published') {
 		setErrors({});
@@ -141,67 +157,107 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				{errors.patch && <p className="text-sm text-destructive">{errors.patch[0]}</p>}
 			</div>
 
-			{/* Editor / Preview */}
+			{/* Editor */}
 			<div className="space-y-2">
-				<Label>本文</Label>
-
-				{/* Mobile tab switcher */}
-				<div className="flex gap-1 md:hidden">
-					<button
-						type="button"
-						onClick={() => setActiveTab('edit')}
-						className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-							activeTab === 'edit'
-								? 'bg-secondary text-foreground'
-								: 'text-muted-foreground hover:text-foreground'
-						}`}
-					>
-						エディター
-					</button>
-					<button
-						type="button"
-						onClick={() => setActiveTab('preview')}
-						className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-							activeTab === 'preview'
-								? 'bg-secondary text-foreground'
-								: 'text-muted-foreground hover:text-foreground'
-						}`}
-					>
-						プレビュー
-					</button>
+				<div className="flex items-center justify-between">
+					<Label>本文</Label>
+					<div className="flex gap-1 rounded-md border border-input p-0.5">
+						<button
+							type="button"
+							onClick={() => handleEditorModeChange('visual')}
+							className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+								editorMode === 'visual'
+									? 'bg-secondary text-foreground'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
+						>
+							<Eye className="h-3.5 w-3.5" />
+							ビジュアル
+						</button>
+						<button
+							type="button"
+							onClick={() => handleEditorModeChange('markdown')}
+							className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+								editorMode === 'markdown'
+									? 'bg-secondary text-foreground'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
+						>
+							<Pen className="h-3.5 w-3.5" />
+							Markdown
+						</button>
+					</div>
 				</div>
 
-				{/* Two-column layout (desktop) / Tab content (mobile) */}
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-					<div className={activeTab !== 'edit' ? 'hidden md:block' : ''}>
-						<textarea
-							value={body}
-							onChange={(e) => setBody(e.target.value)}
-							placeholder="Markdown で記事を書く..."
-							className="h-[500px] w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none font-mono dark:bg-input/30"
-							aria-invalid={!!errors.body}
-						/>
+				{editorMode === 'visual' ? (
+					<>
+						<RichTextEditor key={richEditorKey} content={body} onChange={setBody} />
 						{errors.body && <p className="text-sm text-destructive mt-1">{errors.body[0]}</p>}
 						<p className="text-xs text-muted-foreground text-right mt-1">
 							{body.length.toLocaleString()}/50,000
 						</p>
-					</div>
-					<div
-						className={`rounded-md border border-border p-4 overflow-y-auto h-[500px] ${
-							activeTab !== 'preview' ? 'hidden md:block' : ''
-						}`}
-					>
-						{body ? (
-							<MarkdownPreview body={body} />
-						) : (
-							<p className="text-sm text-muted-foreground">プレビューがここに表示されます</p>
-						)}
-					</div>
-				</div>
+					</>
+				) : (
+					<>
+						{/* Mobile tab switcher */}
+						<div className="flex gap-1 md:hidden">
+							<button
+								type="button"
+								onClick={() => setActiveTab('edit')}
+								className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+									activeTab === 'edit'
+										? 'bg-secondary text-foreground'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+							>
+								エディター
+							</button>
+							<button
+								type="button"
+								onClick={() => setActiveTab('preview')}
+								className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+									activeTab === 'preview'
+										? 'bg-secondary text-foreground'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+							>
+								プレビュー
+							</button>
+						</div>
+
+						{/* Two-column layout (desktop) / Tab content (mobile) */}
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div className={activeTab !== 'edit' ? 'hidden md:block' : ''}>
+								<textarea
+									value={body}
+									onChange={(e) => setBody(e.target.value)}
+									placeholder="Markdown で記事を書く..."
+									className="h-[500px] w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none font-mono dark:bg-input/30"
+									aria-invalid={!!errors.body}
+								/>
+								{errors.body && <p className="text-sm text-destructive mt-1">{errors.body[0]}</p>}
+								<p className="text-xs text-muted-foreground text-right mt-1">
+									{body.length.toLocaleString()}/50,000
+								</p>
+							</div>
+							<div
+								className={`rounded-md border border-border p-4 overflow-y-auto h-[500px] ${
+									activeTab !== 'preview' ? 'hidden md:block' : ''
+								}`}
+							>
+								{body ? (
+									<MarkdownPreview body={body} />
+								) : (
+									<p className="text-sm text-muted-foreground">プレビューがここに表示されます</p>
+								)}
+							</div>
+						</div>
+					</>
+				)}
 			</div>
 
-			{/* Image uploader */}
-			<ImageUploader onInsert={handleImageInsert} />
+			{/* Image uploader (Markdown mode only) */}
+			{editorMode === 'markdown' && <ImageUploader onInsert={handleImageInsert} />}
 
 			{/* Submit buttons */}
 			<div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-border">
