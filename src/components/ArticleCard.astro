@@ -7,9 +7,10 @@ interface Props {
 	publishedAt: Date | null;
 	createdAt: Date;
 	reactionCount?: number;
+	patch?: string | null;
 }
 
-const { title, slug, author, tags, publishedAt, createdAt, reactionCount } = Astro.props;
+const { title, slug, author, tags, publishedAt, createdAt, reactionCount, patch } = Astro.props;
 const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 ---
 
@@ -50,8 +51,13 @@ const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 		)}
 	</div>
 
-	{tags.length > 0 && (
+	{(tags.length > 0 || patch) && (
 		<div class="mt-3 flex flex-wrap gap-2">
+			{patch && (
+				<span class="inline-block rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">
+					Patch {patch}
+				</span>
+			)}
 			{tags.map((tag) => (
 				<span class="inline-block rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
 					{tag.name}

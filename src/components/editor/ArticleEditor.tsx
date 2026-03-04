@@ -15,6 +15,7 @@ interface ArticleData {
 	body: string;
 	status: string;
 	tags: TagInfo[];
+	patch?: string | null;
 }
 
 interface ArticleEditorProps {
@@ -27,6 +28,10 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [title, setTitle] = useState(article?.title ?? '');
 	const [body, setBody] = useState(article?.body ?? '');
 	const [selectedTags, setSelectedTags] = useState<string[]>(article?.tags.map((t) => t.id) ?? []);
+	const [patch, setPatch] = useState(article?.patch ?? '');
+	const [patchIndependent, setPatchIndependent] = useState(
+		article?.patch === null || article?.patch === undefined ? mode === 'new' : false,
+	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string[]>>({});
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -40,7 +45,13 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 		setIsSubmitting(true);
 
 		try {
-			const payload = { title, body, tags: selectedTags, status };
+			const payload = {
+				title,
+				body,
+				tags: selectedTags,
+				status,
+				patch: patchIndependent ? null : patch || null,
+			};
 
 			const url = mode === 'new' ? '/api/articles' : `/api/articles/${article?.slug}`;
 			const method = mode === 'new' ? 'POST' : 'PUT';
@@ -100,6 +111,35 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 			{/* Tags */}
 			<TagSelector tags={tags} selectedIds={selectedTags} onChange={setSelectedTags} />
 			{errors.tags && <p className="text-sm text-destructive">{errors.tags[0]}</p>}
+
+			{/* Patch */}
+			<div className="space-y-2">
+				<Label>パッチバージョン</Label>
+				<div className="flex items-center gap-4">
+					<label className="flex items-center gap-2 text-sm">
+						<input
+							type="checkbox"
+							checked={patchIndependent}
+							onChange={(e) => {
+								setPatchIndependent(e.target.checked);
+								if (e.target.checked) setPatch('');
+							}}
+							className="rounded border-input"
+						/>
+						パッチに依存しない
+					</label>
+					{!patchIndependent && (
+						<Input
+							value={patch}
+							onChange={(e) => setPatch(e.target.value)}
+							placeholder="例: 7.0"
+							className="w-32"
+							maxLength={10}
+						/>
+					)}
+				</div>
+				{errors.patch && <p className="text-sm text-destructive">{errors.patch[0]}</p>}
+			</div>
 
 			{/* Editor / Preview */}
 			<div className="space-y-2">

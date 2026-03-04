@@ -9,12 +9,14 @@ const page = Math.max(1, Number(Astro.url.searchParams.get('page')) || 1);
 const sortParam = Astro.url.searchParams.get('sort');
 const sort = sortParam === 'popular' ? 'popular' : 'newest';
 const tag = Astro.url.searchParams.get('tag') || undefined;
+const patch = Astro.url.searchParams.get('patch') || undefined;
 
 const { data: articles, meta } = await listArticles(Astro.locals.db, {
 	page,
 	limit: 12,
 	sort,
 	tag,
+	patch,
 	status: 'published',
 });
 
@@ -24,18 +26,36 @@ const totalPages = Math.ceil(meta.total / meta.limit);
 const selectedTag = tag ? allTags.find((t) => t.slug === tag) : undefined;
 const pageTitle = selectedTag ? `タグ: ${selectedTag.name}の記事` : '記事一覧';
 
-const baseUrl = `/articles?sort=${sort}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`;
+const patchParam = patch ? `&patch=${encodeURIComponent(patch)}` : '';
+const baseUrl = `/articles?sort=${sort}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}${patchParam}`;
 
 function sortUrl(sortValue: 'newest' | 'popular'): string {
-	return `/articles?sort=${sortValue}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`;
+	return `/articles?sort=${sortValue}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}${patchParam}`;
 }
 
 function tagUrl(tagSlug: string | null): string {
+	const p = patchParam;
 	if (tagSlug) {
-		return `/articles?sort=${sort}&tag=${encodeURIComponent(tagSlug)}`;
+		return `/articles?sort=${sort}&tag=${encodeURIComponent(tagSlug)}${p}`;
 	}
-	return `/articles?sort=${sort}`;
+	return `/articles?sort=${sort}${p}`;
 }
+
+function patchUrl(patchValue: string | null): string {
+	const t = tag ? `&tag=${encodeURIComponent(tag)}` : '';
+	if (patchValue) {
+		return `/articles?sort=${sort}${t}&patch=${encodeURIComponent(patchValue)}`;
+	}
+	return `/articles?sort=${sort}${t}`;
+}
+
+const patchFilters = [
+	{ label: 'すべて', value: null },
+	{ label: '7.x', value: '7.x' },
+	{ label: '6.x', value: '6.x' },
+	{ label: '5.x', value: '5.x' },
+	{ label: 'パッチ共通', value: 'none' },
+];
 
 const TAG_DISPLAY_LIMIT = 12;
 const showExpandButton = allTags.length > TAG_DISPLAY_LIMIT;
@@ -71,6 +91,24 @@ const showExpandButton = allTags.length > TAG_DISPLAY_LIMIT;
 					人気順
 				</a>
 			</div>
+		</div>
+
+		{/* Patch filter */}
+		<div class="mt-4 flex items-center gap-2">
+			<span class="text-sm font-medium text-muted-foreground">パッチ:</span>
+			{patchFilters.map((pf) => (
+				<a
+					href={patchUrl(pf.value)}
+					class:list={[
+						'inline-block rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+						patch === pf.value || (!patch && pf.value === null)
+							? 'bg-primary text-primary-foreground'
+							: 'bg-secondary text-muted-foreground hover:text-foreground',
+					]}
+				>
+					{pf.label}
+				</a>
+			))}
 		</div>
 
 		{/* Tag filter */}
@@ -140,6 +178,7 @@ const showExpandButton = allTags.length > TAG_DISPLAY_LIMIT;
 						tags={article.tags}
 						publishedAt={article.publishedAt}
 						createdAt={article.createdAt}
+						patch={article.patch}
 					/>
 				))}
 			</div>
