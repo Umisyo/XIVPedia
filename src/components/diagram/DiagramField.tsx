@@ -6,10 +6,10 @@ import {
 	FIELD_RADIUS,
 	MARKER_RADIUS,
 	ROLE_COLORS,
+	type Role,
 	SVG_SIZE,
 	WAYMARK_COLORS,
 	WAYMARK_SIZE,
-	type Role,
 	type WaymarkLabel,
 } from '@/components/diagram/constants';
 import type { DiagramData } from '@/components/diagram/types';
@@ -32,30 +32,22 @@ const DIRECTION_LABELS = [
 	{ text: 'W', x: FIELD_CENTER - FIELD_RADIUS - 20, y: FIELD_CENTER + 4 },
 ];
 
-export function DiagramField({
-	data,
-	onUpdate,
-	onDropMarker,
-	onDropWaymark,
-}: DiagramFieldProps) {
+export function DiagramField({ data, onUpdate, onDropMarker, onDropWaymark }: DiagramFieldProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const dragRef = useRef<{
 		type: 'marker' | 'waymark';
 		index: number;
 	} | null>(null);
 
-	const toNormalized = useCallback(
-		(clientX: number, clientY: number): { x: number; y: number } => {
-			const svg = svgRef.current;
-			if (!svg) return { x: 0.5, y: 0.5 };
-			const rect = svg.getBoundingClientRect();
-			return {
-				x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
-				y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
-			};
-		},
-		[],
-	);
+	const toNormalized = useCallback((clientX: number, clientY: number): { x: number; y: number } => {
+		const svg = svgRef.current;
+		if (!svg) return { x: 0.5, y: 0.5 };
+		const rect = svg.getBoundingClientRect();
+		return {
+			x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+			y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+		};
+	}, []);
 
 	const handlePointerDown = useCallback(
 		(type: 'marker' | 'waymark', index: number, e: React.PointerEvent) => {
@@ -138,6 +130,8 @@ export function DiagramField({
 			width="100%"
 			height="100%"
 			className="touch-none select-none"
+			role="img"
+			aria-label="散開図フィールド"
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
 			onDragOver={handleDragOver}
@@ -197,19 +191,16 @@ export function DiagramField({
 			{data.waymarks.map((wm, i) => {
 				const wx = toSvgCoord(wm.x);
 				const wy = toSvgCoord(wm.y);
-				const color =
-					WAYMARK_COLORS[wm.label as WaymarkLabel] ?? '#94a3b8';
+				const color = WAYMARK_COLORS[wm.label as WaymarkLabel] ?? '#94a3b8';
 				const isNumber = /^[1-4]$/.test(wm.label);
 				return (
+					// biome-ignore lint/a11y/useSemanticElements: SVG <g> cannot be replaced with <button>
 					<g
 						key={`wm-${wm.label}`}
+						role="button"
 						style={{ cursor: 'grab' }}
-						onPointerDown={(e) =>
-							handlePointerDown('waymark', i, e)
-						}
-						onContextMenu={(e) =>
-							handleContextMenu('waymark', i, e)
-						}
+						onPointerDown={(e) => handlePointerDown('waymark', i, e)}
+						onContextMenu={(e) => handleContextMenu('waymark', i, e)}
 					>
 						{isNumber ? (
 							<rect
@@ -255,24 +246,15 @@ export function DiagramField({
 				const my = toSvgCoord(m.y);
 				const color = ROLE_COLORS[m.role as Role] ?? '#94a3b8';
 				return (
+					// biome-ignore lint/a11y/useSemanticElements: SVG <g> cannot be replaced with <button>
 					<g
 						key={`m-${m.role}`}
+						role="button"
 						style={{ cursor: 'grab' }}
-						onPointerDown={(e) =>
-							handlePointerDown('marker', i, e)
-						}
-						onContextMenu={(e) =>
-							handleContextMenu('marker', i, e)
-						}
+						onPointerDown={(e) => handlePointerDown('marker', i, e)}
+						onContextMenu={(e) => handleContextMenu('marker', i, e)}
 					>
-						<circle
-							cx={mx}
-							cy={my}
-							r={MARKER_RADIUS}
-							fill={color}
-							stroke="#fff"
-							strokeWidth={2}
-						/>
+						<circle cx={mx} cy={my} r={MARKER_RADIUS} fill={color} stroke="#fff" strokeWidth={2} />
 						<text
 							x={mx}
 							y={my + 5}

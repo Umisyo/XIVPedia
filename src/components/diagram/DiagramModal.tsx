@@ -71,7 +71,13 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 	return (
 		<div
 			ref={overlayRef}
+			role="dialog"
+			aria-modal="true"
+			aria-label="散開図エディタ"
 			onClick={handleOverlayClick}
+			onKeyDown={(e) => {
+				if (e.key === 'Escape') onClose();
+			}}
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
 		>
 			<div className="relative w-full max-w-3xl mx-4 rounded-lg border border-border bg-background p-6 shadow-lg">

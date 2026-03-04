@@ -1,9 +1,9 @@
 import { Eye, Grid2x2, Pen, Save, Send } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { DiagramModal } from '@/components/diagram/DiagramModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DiagramModal } from '@/components/diagram/DiagramModal';
 import type { TagInfo } from '@/lib/tags';
 import { ImageUploader } from './ImageUploader';
 import { MarkdownPreview } from './MarkdownPreview';
@@ -263,11 +263,7 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 			</div>
 
 			{/* Diagram button */}
-			<Button
-				type="button"
-				variant="outline"
-				onClick={() => setIsDiagramOpen(true)}
-			>
+			<Button type="button" variant="outline" onClick={() => setIsDiagramOpen(true)}>
 				<Grid2x2 className="h-4 w-4" />
 				散開図
 			</Button>

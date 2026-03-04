@@ -1,7 +1,7 @@
-import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 import DOMPurify from 'dompurify';
 import { Marked } from 'marked';
 import { useEffect, useState } from 'react';
+import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 
 const marked = new Marked({
 	renderer: {
@@ -12,10 +12,7 @@ const marked = new Marked({
 					return `<div class="diagram-container">${renderDiagramSvg(data)}</div>`;
 				}
 			}
-			const escaped = text
-				.replace(/&/g, '&amp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;');
+			const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 			return `<pre><code class="language-${lang || 'text'}">${escaped}</code></pre>`;
 		},
 	},
@@ -36,7 +33,33 @@ export function MarkdownPreview({ body }: MarkdownPreviewProps) {
 			const sanitized = DOMPurify.sanitize(raw, {
 				FORCE_BODY: true,
 				ADD_TAGS: ['svg', 'circle', 'rect', 'line', 'text', 'g', 'defs', 'clipPath'],
-				ADD_ATTR: ['viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'cx', 'cy', 'r', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'width', 'height', 'rx', 'ry', 'opacity', 'text-anchor', 'font-size', 'font-weight', 'font-family', 'xmlns', 'd'],
+				ADD_ATTR: [
+					'viewBox',
+					'fill',
+					'stroke',
+					'stroke-width',
+					'stroke-dasharray',
+					'cx',
+					'cy',
+					'r',
+					'x',
+					'y',
+					'x1',
+					'y1',
+					'x2',
+					'y2',
+					'width',
+					'height',
+					'rx',
+					'ry',
+					'opacity',
+					'text-anchor',
+					'font-size',
+					'font-weight',
+					'font-family',
+					'xmlns',
+					'd',
+				],
 			});
 			if (!cancelled) {
 				setHtml(sanitized);

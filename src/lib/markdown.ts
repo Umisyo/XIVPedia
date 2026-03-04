@@ -1,8 +1,8 @@
-import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 import { Marked } from 'marked';
 import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 import vitesseDark from 'shiki/themes/vitesse-dark.mjs';
+import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 
 let highlighterPromise: Promise<HighlighterCore> | null = null;
 

@@ -3,10 +3,10 @@ import {
 	FIELD_RADIUS,
 	MARKER_RADIUS,
 	ROLE_COLORS,
+	type Role,
 	SVG_SIZE,
 	WAYMARK_COLORS,
 	WAYMARK_SIZE,
-	type Role,
 	type WaymarkLabel,
 } from './constants';
 import type { DiagramData } from './types';

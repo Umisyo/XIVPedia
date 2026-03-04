@@ -1,11 +1,11 @@
 'use client';
 
 import {
-	ROLES,
 	ROLE_COLORS,
-	WAYMARK_LABELS,
-	WAYMARK_COLORS,
+	ROLES,
 	type Role,
+	WAYMARK_COLORS,
+	WAYMARK_LABELS,
 	type WaymarkLabel,
 } from '@/components/diagram/constants';
 
@@ -14,17 +14,12 @@ interface DiagramPaletteProps {
 	existingWaymarks: string[];
 }
 
-export function DiagramPalette({
-	existingMarkers,
-	existingWaymarks,
-}: DiagramPaletteProps) {
+export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPaletteProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* ロールセクション */}
 			<div>
-				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-					ロール
-				</h3>
+				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">ロール</h3>
 				<div className="flex flex-wrap gap-2">
 					{ROLES.map((role) => {
 						const placed = existingMarkers.includes(role);
@@ -32,6 +27,8 @@ export function DiagramPalette({
 						return (
 							<span
 								key={role}
+								role="img"
+								aria-label={`${role} マーカー`}
 								draggable={!placed}
 								onDragStart={(e) => {
 									if (placed) return;
@@ -54,18 +51,17 @@ export function DiagramPalette({
 
 			{/* ウェイマークセクション */}
 			<div>
-				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-					ウェイマーク
-				</h3>
+				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">ウェイマーク</h3>
 				<div className="flex flex-wrap gap-2">
 					{WAYMARK_LABELS.map((label) => {
 						const placed = existingWaymarks.includes(label);
-						const color =
-							WAYMARK_COLORS[label as WaymarkLabel];
+						const color = WAYMARK_COLORS[label as WaymarkLabel];
 						const isNumber = /^[1-4]$/.test(label);
 						return (
 							<span
 								key={label}
+								role="img"
+								aria-label={`ウェイマーク ${label}`}
 								draggable={!placed}
 								onDragStart={(e) => {
 									if (placed) return;
