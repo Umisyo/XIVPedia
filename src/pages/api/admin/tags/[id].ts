@@ -1,4 +1,5 @@
 import type { APIContext } from 'astro';
+import { listCategorySlugs } from '../../../../lib/categories';
 import { forbidden, notFound, unauthorized, validationError } from '../../../../lib/errors';
 import { deleteTag, generateTagSlug, getTagById, updateTag } from '../../../../lib/tags';
 import { validateUpdateTag } from '../../../../lib/validation';
@@ -30,6 +31,14 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	const result = validateUpdateTag(body);
 	if (!result.success) {
 		return validationError(result.errors);
+	}
+
+	// カテゴリの存在チェック
+	if (result.data.category !== undefined) {
+		const validSlugs = await listCategorySlugs(db);
+		if (!validSlugs.includes(result.data.category)) {
+			return validationError({ category: ['指定されたカテゴリは存在しません'] });
+		}
 	}
 
 	const updates: Parameters<typeof updateTag>[2] = {};
