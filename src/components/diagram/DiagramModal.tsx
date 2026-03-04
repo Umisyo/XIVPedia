@@ -6,18 +6,27 @@ import type { DiagramData } from './types';
 interface DiagramModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onInsert: (codeFence: string) => void;
+	onInsert?: (codeFence: string) => void;
+	onSave?: (json: string) => void;
+	initialData?: DiagramData;
 }
 
-const INITIAL_DATA: DiagramData = {
+const EMPTY_DATA: DiagramData = {
 	fieldType: 'circle',
 	markers: [],
 	waymarks: [],
 };
 
-export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
-	const [data, setData] = useState<DiagramData>(INITIAL_DATA);
+export function DiagramModal({
+	isOpen,
+	onClose,
+	onInsert,
+	onSave,
+	initialData,
+}: DiagramModalProps) {
+	const [data, setData] = useState<DiagramData>(initialData ?? EMPTY_DATA);
 	const [editorKey, setEditorKey] = useState(0);
+	const isEditMode = !!onSave;
 	const overlayRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -54,15 +63,19 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 		[onClose],
 	);
 
-	const handleInsert = useCallback(() => {
-		const json = JSON.stringify(data);
-		const codeFence = `\`\`\`diagram\n${json}\n\`\`\``;
-		onInsert(codeFence);
+	const handleSubmit = useCallback(() => {
+		if (isEditMode && onSave) {
+			onSave(JSON.stringify(data));
+		} else if (onInsert) {
+			const json = JSON.stringify(data);
+			const codeFence = `\`\`\`diagram\n${json}\n\`\`\``;
+			onInsert(codeFence);
+		}
 		onClose();
-	}, [data, onInsert, onClose]);
+	}, [data, isEditMode, onSave, onInsert, onClose]);
 
 	const handleClear = useCallback(() => {
-		setData({ ...INITIAL_DATA });
+		setData({ ...EMPTY_DATA });
 		setEditorKey((k) => k + 1);
 	}, []);
 
@@ -93,8 +106,8 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 						<Button type="button" variant="outline" onClick={onClose}>
 							キャンセル
 						</Button>
-						<Button type="button" onClick={handleInsert}>
-							挿入
+						<Button type="button" onClick={handleSubmit}>
+							{isEditMode ? '更新' : '挿入'}
 						</Button>
 					</div>
 				</div>
