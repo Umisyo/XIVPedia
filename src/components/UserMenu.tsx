@@ -1,12 +1,13 @@
-import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, Shield, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
 	displayName: string;
 	avatarUrl?: string;
+	role?: string;
 }
 
-export default function UserMenu({ displayName, avatarUrl }: Props) {
+export default function UserMenu({ displayName, avatarUrl, role }: Props) {
 	const [isOpen, setIsOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -40,9 +41,18 @@ export default function UserMenu({ displayName, avatarUrl }: Props) {
 
 			{isOpen && (
 				<div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-50">
+					{role === 'admin' && (
+						<a
+							href="/admin"
+							className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors rounded-t-md"
+						>
+							<Shield size={16} />
+							管理画面
+						</a>
+					)}
 					<a
 						href="/settings/profile"
-						className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors rounded-t-md"
+						className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ${role !== 'admin' ? 'rounded-t-md' : ''}`}
 					>
 						<Settings size={16} />
 						プロフィール設定
