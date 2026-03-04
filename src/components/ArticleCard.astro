@@ -6,9 +6,10 @@ interface Props {
 	tags: { name: string; slug: string }[];
 	publishedAt: Date | null;
 	createdAt: Date;
+	reactionCount?: number;
 }
 
-const { title, slug, author, tags, publishedAt, createdAt } = Astro.props;
+const { title, slug, author, tags, publishedAt, createdAt, reactionCount } = Astro.props;
 const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 ---
 
@@ -42,6 +43,11 @@ const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 		<time datetime={(publishedAt ?? createdAt).toISOString()}>
 			{displayDate}
 		</time>
+		{reactionCount != null && reactionCount > 0 && (
+			<span class="ml-auto flex items-center gap-1">
+				👍 {reactionCount}
+			</span>
+		)}
 	</div>
 
 	{tags.length > 0 && (

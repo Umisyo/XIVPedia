@@ -1,0 +1,30 @@
+---
+interface TagItem {
+	id: string;
+	name: string;
+	slug: string;
+	category: string;
+	articleCount?: number;
+}
+
+interface Props {
+	tags: TagItem[];
+	baseUrl?: string;
+}
+
+const { tags, baseUrl = '/tags' } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-2">
+	{tags.map((tag) => (
+		<a
+			href={`${baseUrl}/${tag.slug}`}
+			class="inline-block rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+		>
+			{tag.name}
+			{tag.articleCount != null && (
+				<span class="ml-1 text-muted-foreground/70">({tag.articleCount})</span>
+			)}
+		</a>
+	))}
+</div>

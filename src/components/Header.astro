@@ -21,9 +21,21 @@ const currentUser = Astro.locals.currentUser;
 				>
 					記事一覧
 				</a>
+				<a
+					href="/tags"
+					class="text-muted-foreground hover:text-foreground transition-colors"
+				>
+					タグ
+				</a>
 				{
 					currentUser ? (
 						<>
+							<a
+								href="/mypage"
+								class="text-muted-foreground hover:text-foreground transition-colors"
+							>
+								マイページ
+							</a>
 							<a
 								href="/articles/new"
 								class="bg-primary text-primary-foreground px-4 py-2 rounded-md

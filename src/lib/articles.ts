@@ -50,6 +50,7 @@ interface ArticleDetail {
 	updatedAt: Date;
 	author: AuthorInfo;
 	tags: TagInfo[];
+	reactionCount: number;
 }
 
 async function getTagsForArticles(
@@ -131,6 +132,8 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 
 	const totalResult = await db.select({ total: count() }).from(articles).where(where);
 
+	const reactionCount = sql<number>`count(${reactions.userId})`.as('reaction_count');
+
 	let rows: {
 		id: string;
 		title: string;
@@ -144,11 +147,10 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		authorUsername: string | null;
 		authorDisplayName: string | null;
 		authorAvatarUrl: string | null;
+		reactionCount: number;
 	}[];
 
 	if (sort === 'popular') {
-		const reactionCount = sql<number>`count(${reactions.userId})`.as('reaction_count');
-
 		rows = await db
 			.select({
 				...selectFields,
@@ -164,10 +166,15 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 			.offset(offset);
 	} else {
 		rows = await db
-			.select(selectFields)
+			.select({
+				...selectFields,
+				reactionCount,
+			})
 			.from(articles)
 			.leftJoin(profiles, eq(articles.authorId, profiles.id))
+			.leftJoin(reactions, eq(articles.id, reactions.articleId))
 			.where(where)
+			.groupBy(articles.id, profiles.id)
 			.orderBy(desc(articles.createdAt))
 			.limit(limit)
 			.offset(offset);
@@ -193,12 +200,15 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 			avatarUrl: row.authorAvatarUrl ?? null,
 		},
 		tags: tagsMap.get(row.id) ?? [],
+		reactionCount: Number(row.reactionCount) || 0,
 	}));
 
 	return { data, meta: { page, limit, total } };
 }
 
 export async function getArticleBySlug(db: Database, slug: string): Promise<ArticleDetail | null> {
+	const reactionCountExpr = sql<number>`count(distinct ${reactions.userId})`.as('reaction_count');
+
 	const rows = await db
 		.select({
 			id: articles.id,
@@ -213,10 +223,13 @@ export async function getArticleBySlug(db: Database, slug: string): Promise<Arti
 			authorUsername: profiles.username,
 			authorDisplayName: profiles.displayName,
 			authorAvatarUrl: profiles.avatarUrl,
+			reactionCount: reactionCountExpr,
 		})
 		.from(articles)
 		.leftJoin(profiles, eq(articles.authorId, profiles.id))
+		.leftJoin(reactions, eq(articles.id, reactions.articleId))
 		.where(eq(articles.slug, slug))
+		.groupBy(articles.id, profiles.id)
 		.limit(1);
 
 	if (rows.length === 0) return null;
@@ -240,6 +253,7 @@ export async function getArticleBySlug(db: Database, slug: string): Promise<Arti
 			avatarUrl: row.authorAvatarUrl ?? null,
 		},
 		tags: tagsMap.get(row.id) ?? [],
+		reactionCount: Number(row.reactionCount) || 0,
 	};
 }
 

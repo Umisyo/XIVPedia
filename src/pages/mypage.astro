@@ -1,0 +1,165 @@
+---
+import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { articles, articleTags, reactions, tags } from '../db/schema';
+import Layout from '../layouts/Layout.astro';
+
+const currentUser = Astro.locals.currentUser;
+if (!currentUser) {
+	return Astro.redirect('/login');
+}
+if (!currentUser.profile) {
+	return Astro.redirect('/onboarding');
+}
+
+const db = Astro.locals.db;
+const userId = currentUser.profile.id;
+
+const myArticles = await db
+	.select({
+		id: articles.id,
+		title: articles.title,
+		slug: articles.slug,
+		status: articles.status,
+		publishedAt: articles.publishedAt,
+		createdAt: articles.createdAt,
+		updatedAt: articles.updatedAt,
+		reactionCount: sql<number>`count(distinct ${reactions.userId})`,
+	})
+	.from(articles)
+	.leftJoin(reactions, eq(articles.id, reactions.articleId))
+	.where(eq(articles.authorId, userId))
+	.groupBy(articles.id)
+	.orderBy(desc(articles.updatedAt));
+
+const articleIds = myArticles.map((a) => a.id);
+const articleTagRows =
+	articleIds.length > 0
+		? await db
+				.select({
+					articleId: articleTags.articleId,
+					tagName: tags.name,
+					tagSlug: tags.slug,
+				})
+				.from(articleTags)
+				.innerJoin(tags, eq(articleTags.tagId, tags.id))
+				.where(inArray(articleTags.articleId, articleIds))
+		: [];
+
+const tagsByArticle = new Map<string, { name: string; slug: string }[]>();
+for (const row of articleTagRows) {
+	const list = tagsByArticle.get(row.articleId) ?? [];
+	list.push({ name: row.tagName, slug: row.tagSlug });
+	tagsByArticle.set(row.articleId, list);
+}
+
+const publishedCount = myArticles.filter((a) => a.status === 'published').length;
+const draftCount = myArticles.filter((a) => a.status === 'draft').length;
+
+function formatDate(date: Date | null): string {
+	if (!date) return '';
+	return date.toLocaleDateString('ja-JP', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+	});
+}
+---
+
+<Layout title="マイページ">
+	<section class="py-8">
+		<h1 class="text-3xl font-bold text-foreground">マイページ</h1>
+
+		<p class="mt-4 text-lg text-muted-foreground">
+			{currentUser.profile.displayName} さんの記事
+		</p>
+
+		<div class="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+			<span>公開: {publishedCount}件</span>
+			<span>/</span>
+			<span>下書き: {draftCount}件</span>
+		</div>
+
+		{myArticles.length > 0 ? (
+			<div class="mt-8 space-y-4">
+				{myArticles.map((article) => {
+					const isPublished = article.status === 'published';
+					const articleTagList = tagsByArticle.get(article.id) ?? [];
+					const titleHref = isPublished
+						? `/articles/${article.slug}`
+						: `/articles/${article.slug}/edit`;
+
+					return (
+						<div class="bg-card rounded-lg border border-border p-4 hover:border-primary/50 transition-colors">
+							<a href={titleHref} class="text-lg font-bold text-foreground hover:text-primary transition-colors">
+								{article.title}
+							</a>
+
+							<div class="mt-2 flex flex-wrap items-center gap-3 text-sm">
+								{isPublished ? (
+									<span class="bg-green-500/20 text-green-400 rounded-full px-2 py-0.5 text-xs">
+										公開中
+									</span>
+								) : (
+									<span class="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+										下書き
+									</span>
+								)}
+
+								<span class="text-muted-foreground">
+									{formatDate(article.updatedAt)}
+								</span>
+
+								{isPublished && article.reactionCount > 0 && (
+									<span class="text-muted-foreground">
+										👍 {article.reactionCount}
+									</span>
+								)}
+							</div>
+
+							<div class="mt-3 flex items-center justify-between">
+								<div class="flex flex-wrap gap-2">
+									{articleTagList.map((tag) => (
+										<a
+											href={`/tags/${tag.slug}`}
+											class="inline-block rounded-md bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+										>
+											{tag.name}
+										</a>
+									))}
+								</div>
+
+								<a
+									href={`/articles/${article.slug}/edit`}
+									class="text-sm text-primary hover:opacity-80 transition-opacity"
+								>
+									編集
+								</a>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		) : (
+			<div class="mt-8 rounded-lg border border-border bg-card p-12 text-center">
+				<p class="text-muted-foreground">
+					まだ記事がありません。最初の記事を書いてみましょう！
+				</p>
+				<a
+					href="/articles/new"
+					class="mt-4 inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+				>
+					記事を書く
+				</a>
+			</div>
+		)}
+
+		<div class="mt-8">
+			<a
+				href="/articles/new"
+				class="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+			>
+				新しい記事を書く →
+			</a>
+		</div>
+	</section>
+</Layout>
