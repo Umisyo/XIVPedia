@@ -87,6 +87,7 @@ export function DiagramModal({
 			role="dialog"
 			aria-modal="true"
 			aria-label="散開図エディタ"
+			contentEditable={false}
 			onClick={handleOverlayClick}
 			onKeyDown={(e) => {
 				if (e.key === 'Escape') onClose();
