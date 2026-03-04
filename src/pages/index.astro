@@ -2,30 +2,21 @@
 import ArticleCard from '../components/ArticleCard.astro';
 import Layout from '../layouts/Layout.astro';
 import { listArticles } from '../lib/articles';
-import { groupTagsByCategory, listTags, TAG_CATEGORIES } from '../lib/tags';
-
-const categoryLabels: Record<string, string> = {
-	duty: 'コンテンツ',
-	job: 'ジョブ',
-	crafting: 'クラフター',
-	gathering: 'ギャザラー',
-	general: 'その他',
-};
+import { listCategories } from '../lib/categories';
+import { groupTagsByCategory, listTags } from '../lib/tags';
 
 const listOpts = { skipCount: true, excludeBody: true, status: 'published' as const };
-const { data: popularArticles } = await listArticles(Astro.locals.db, {
-	...listOpts,
-	limit: 6,
-	sort: 'popular',
-});
-const { data: newestArticles } = await listArticles(Astro.locals.db, {
-	...listOpts,
-	limit: 6,
-	sort: 'newest',
-});
-const allTags = await listTags(Astro.locals.db);
+const [{ data: popularArticles }, { data: newestArticles }, allTags, categories] =
+	await Promise.all([
+		listArticles(Astro.locals.db, { ...listOpts, limit: 6, sort: 'popular' }),
+		listArticles(Astro.locals.db, { ...listOpts, limit: 6, sort: 'newest' }),
+		listTags(Astro.locals.db),
+		listCategories(Astro.locals.db),
+	]);
 
 const groupedTags = groupTagsByCategory(allTags);
+const categoryLabels = new Map(categories.map((c) => [c.slug, c.name]));
+const categorySlugs = categories.map((c) => c.slug);
 ---
 
 <Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト">
@@ -91,13 +82,13 @@ const groupedTags = groupTagsByCategory(allTags);
 		<h2 class="text-2xl font-bold text-foreground mb-6">🏷️ カテゴリ</h2>
 
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{TAG_CATEGORIES.map((category) => {
+			{categorySlugs.map((category) => {
 				const tagsInCategory = groupedTags[category] ?? [];
 				if (tagsInCategory.length === 0) return null;
 				return (
 					<div class="bg-card rounded-lg border border-border p-6">
 						<h3 class="text-lg font-bold text-foreground mb-4">
-							{categoryLabels[category] ?? category}
+							{categoryLabels.get(category) ?? category}
 						</h3>
 						<div class="flex flex-wrap gap-2">
 							{tagsInCategory.map((tag) => (
