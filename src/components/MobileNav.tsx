@@ -1,4 +1,4 @@
-import { LogOut, Menu, Settings, User, X } from 'lucide-react';
+import { LogOut, Menu, Search, Settings, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -35,6 +35,14 @@ export default function MobileNav({ user }: Props) {
 							onClick={() => setIsOpen(false)}
 						>
 							タグ
+						</a>
+						<a
+							href="/search"
+							className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"
+							onClick={() => setIsOpen(false)}
+						>
+							<Search size={16} />
+							検索
 						</a>
 						{user ? (
 							<>
