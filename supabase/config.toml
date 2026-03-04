@@ -1,5 +1,4 @@
-[project]
-id = "xivpedia"
+project_id = "xivpedia"
 
 [api]
 enabled = true
