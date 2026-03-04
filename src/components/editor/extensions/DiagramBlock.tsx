@@ -60,7 +60,9 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 					<div
 						className="diagram-preview-header"
 						role="toolbar"
-						onMouseDown={(e) => e.preventDefault()}
+						onMouseDown={(e) => {
+							if (!(e.target as HTMLElement).closest('button')) e.preventDefault();
+						}}
 					>
 						<span className="diagram-preview-label">散開図 - エラー</span>
 						<button
@@ -89,7 +91,9 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 				<div
 					className="diagram-preview-header"
 					role="toolbar"
-					onMouseDown={(e) => e.preventDefault()}
+					onMouseDown={(e) => {
+						if (!(e.target as HTMLElement).closest('button')) e.preventDefault();
+					}}
 				>
 					<span className="diagram-preview-label">散開図</span>
 					<div className="diagram-preview-actions">
