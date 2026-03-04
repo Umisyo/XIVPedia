@@ -29,7 +29,9 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [body, setBody] = useState(article?.body ?? '');
 	const [selectedTags, setSelectedTags] = useState<string[]>(article?.tags.map((t) => t.id) ?? []);
 	const [patch, setPatch] = useState(article?.patch ?? '');
-	const [patchIndependent, setPatchIndependent] = useState(article?.patch === null || article?.patch === undefined ? (mode === 'new') : false);
+	const [patchIndependent, setPatchIndependent] = useState(
+		article?.patch === null || article?.patch === undefined ? mode === 'new' : false,
+	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string[]>>({});
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');

@@ -90,7 +90,8 @@ export function validateCreateArticle(data: unknown): ValidationResult<CreateArt
 		return { success: false, errors };
 	}
 
-	const patchValue = obj.patch === '' || obj.patch === undefined ? undefined : (obj.patch as string | null);
+	const patchValue =
+		obj.patch === '' || obj.patch === undefined ? undefined : (obj.patch as string | null);
 
 	return {
 		success: true,
