@@ -28,6 +28,7 @@ export default function TagManagement() {
 	// 新規作成フォーム
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [newName, setNewName] = useState('');
+	const [newSlug, setNewSlug] = useState('');
 	const [newCategory, setNewCategory] = useState<TagCategory>('general');
 	const [isCreating, setIsCreating] = useState(false);
 	const [createErrors, setCreateErrors] = useState<Record<string, string[]>>({});
@@ -35,6 +36,7 @@ export default function TagManagement() {
 	// 編集状態
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editName, setEditName] = useState('');
+	const [editSlug, setEditSlug] = useState('');
 	const [editCategory, setEditCategory] = useState<TagCategory>('general');
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [editErrors, setEditErrors] = useState<Record<string, string[]>>({});
@@ -77,10 +79,12 @@ export default function TagManagement() {
 		setCreateErrors({});
 
 		try {
+			const payload: Record<string, string> = { name: newName, category: newCategory };
+			if (newSlug.trim()) payload.slug = newSlug.trim();
 			const res = await fetch('/api/admin/tags', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: newName, category: newCategory }),
+				body: JSON.stringify(payload),
 			});
 
 			if (!res.ok) {
@@ -96,6 +100,7 @@ export default function TagManagement() {
 			const json = await res.json();
 			setTags((prev) => [...prev, json.tag].sort((a, b) => a.name.localeCompare(b.name)));
 			setNewName('');
+			setNewSlug('');
 			setNewCategory('general');
 			setShowCreateForm(false);
 			setToast({ message: 'タグを作成しました', type: 'success' });
@@ -109,6 +114,7 @@ export default function TagManagement() {
 	function startEdit(tag: Tag) {
 		setEditingId(tag.id);
 		setEditName(tag.name);
+		setEditSlug(tag.slug);
 		setEditCategory(tag.category as TagCategory);
 		setEditErrors({});
 	}
@@ -127,7 +133,7 @@ export default function TagManagement() {
 			const res = await fetch(`/api/admin/tags/${editingId}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: editName, category: editCategory }),
+				body: JSON.stringify({ name: editName, slug: editSlug, category: editCategory }),
 			});
 
 			if (!res.ok) {
@@ -259,6 +265,28 @@ export default function TagManagement() {
 							</div>
 							<div>
 								<label
+									htmlFor="new-tag-slug"
+									className="block text-sm font-medium text-foreground mb-1"
+								>
+									スラグ
+									<span className="ml-1 text-xs font-normal text-muted-foreground">
+										(空欄で自動生成)
+									</span>
+								</label>
+								<input
+									id="new-tag-slug"
+									type="text"
+									value={newSlug}
+									onChange={(e) => setNewSlug(e.target.value)}
+									placeholder="例: knights-of-the-round-extreme"
+									className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+								/>
+								{createErrors.slug && (
+									<p className="mt-1 text-xs text-destructive">{createErrors.slug.join(', ')}</p>
+								)}
+							</div>
+							<div>
+								<label
 									htmlFor="new-tag-category"
 									className="block text-sm font-medium text-foreground mb-1"
 								>
@@ -351,7 +379,14 @@ export default function TagManagement() {
 														)}
 														<div className="flex flex-col sm:flex-row gap-2">
 															<div className="flex-1">
+																<label
+																	htmlFor={`edit-tag-name-${tag.id}`}
+																	className="block text-xs text-muted-foreground mb-1"
+																>
+																	タグ名
+																</label>
 																<input
+																	id={`edit-tag-name-${tag.id}`}
 																	type="text"
 																	value={editName}
 																	onChange={(e) => setEditName(e.target.value)}
@@ -366,7 +401,7 @@ export default function TagManagement() {
 															<select
 																value={editCategory}
 																onChange={(e) => setEditCategory(e.target.value as TagCategory)}
-																className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground"
+																className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground self-end"
 															>
 																{CATEGORIES.map((cat) => (
 																	<option key={cat} value={cat}>
@@ -374,6 +409,26 @@ export default function TagManagement() {
 																	</option>
 																))}
 															</select>
+														</div>
+														<div>
+															<label
+																htmlFor={`edit-tag-slug-${tag.id}`}
+																className="block text-xs text-muted-foreground mb-1"
+															>
+																スラグ
+															</label>
+															<input
+																id={`edit-tag-slug-${tag.id}`}
+																type="text"
+																value={editSlug}
+																onChange={(e) => setEditSlug(e.target.value)}
+																className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground"
+															/>
+															{editErrors.slug && (
+																<p className="mt-1 text-xs text-destructive">
+																	{editErrors.slug.join(', ')}
+																</p>
+															)}
 														</div>
 														{editErrors.category && (
 															<p className="text-xs text-destructive">

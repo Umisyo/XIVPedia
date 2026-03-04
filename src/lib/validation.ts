@@ -255,13 +255,18 @@ export function validateCreateReport(data: unknown): ValidationResult<CreateRepo
 const TAG_CATEGORIES_VALID = ['duty', 'job', 'crafting', 'gathering', 'general'] as const;
 type TagCategoryValid = (typeof TAG_CATEGORIES_VALID)[number];
 
+const SLUG_REGEX =
+	/^[a-z0-9\u3000-\u9fff\uf900-\ufaff]([a-z0-9\u3000-\u9fff\uf900-\ufaff-]*[a-z0-9\u3000-\u9fff\uf900-\ufaff])?$/;
+
 export interface CreateTagInput {
 	name: string;
+	slug?: string;
 	category: TagCategoryValid;
 }
 
 export interface UpdateTagInput {
 	name?: string;
+	slug?: string;
 	category?: TagCategoryValid;
 }
 
@@ -282,6 +287,17 @@ export function validateCreateTag(data: unknown): ValidationResult<CreateTagInpu
 		errors.name = ['name must be between 1 and 50 characters'];
 	}
 
+	// slug (optional)
+	if (obj.slug !== undefined && obj.slug !== null && obj.slug !== '') {
+		if (typeof obj.slug !== 'string') {
+			errors.slug = ['slug must be a string'];
+		} else if (obj.slug.length > 100) {
+			errors.slug = ['slug must be at most 100 characters'];
+		} else if (!SLUG_REGEX.test(obj.slug)) {
+			errors.slug = ['slugは小文字英数字・ハイフン・日本語のみ使用できます'];
+		}
+	}
+
 	// category
 	if (obj.category === undefined || obj.category === null) {
 		errors.category = ['category is required'];
@@ -295,13 +311,15 @@ export function validateCreateTag(data: unknown): ValidationResult<CreateTagInpu
 		return { success: false, errors };
 	}
 
-	return {
-		success: true,
-		data: {
-			name: (obj.name as string).trim(),
-			category: obj.category as TagCategoryValid,
-		},
+	const result: CreateTagInput = {
+		name: (obj.name as string).trim(),
+		category: obj.category as TagCategoryValid,
 	};
+	if (typeof obj.slug === 'string' && obj.slug.trim() !== '') {
+		result.slug = obj.slug.trim();
+	}
+
+	return { success: true, data: result };
 }
 
 export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInput> {
@@ -313,9 +331,10 @@ export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInpu
 	const errors: Record<string, string[]> = {};
 
 	const hasName = obj.name !== undefined;
+	const hasSlug = obj.slug !== undefined;
 	const hasCategory = obj.category !== undefined;
 
-	if (!hasName && !hasCategory) {
+	if (!hasName && !hasSlug && !hasCategory) {
 		return {
 			success: false,
 			errors: { _: ['At least one field must be provided'] },
@@ -328,6 +347,19 @@ export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInpu
 			errors.name = ['name must be a string'];
 		} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
 			errors.name = ['name must be between 1 and 50 characters'];
+		}
+	}
+
+	// slug (optional)
+	if (hasSlug) {
+		if (typeof obj.slug !== 'string') {
+			errors.slug = ['slug must be a string'];
+		} else if (obj.slug.trim() === '') {
+			errors.slug = ['slug must not be empty'];
+		} else if (obj.slug.length > 100) {
+			errors.slug = ['slug must be at most 100 characters'];
+		} else if (!SLUG_REGEX.test(obj.slug)) {
+			errors.slug = ['slugは小文字英数字・ハイフン・日本語のみ使用できます'];
 		}
 	}
 
@@ -346,6 +378,7 @@ export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInpu
 
 	const result: UpdateTagInput = {};
 	if (hasName) result.name = (obj.name as string).trim();
+	if (hasSlug) result.slug = (obj.slug as string).trim();
 	if (hasCategory) result.category = obj.category as TagCategoryValid;
 
 	return { success: true, data: result };

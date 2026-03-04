@@ -35,9 +35,13 @@ export async function PATCH(context: APIContext): Promise<Response> {
 	const updates: Parameters<typeof updateTag>[2] = {};
 	if (result.data.name !== undefined) {
 		updates.name = result.data.name;
+	}
+	if (result.data.slug !== undefined) {
+		updates.slug = result.data.slug;
+	} else if (result.data.name !== undefined) {
 		updates.slug = generateTagSlug(result.data.name);
 		if (!updates.slug) {
-			return validationError({ name: ['タグ名からスラグを生成できません'] });
+			return validationError({ slug: ['スラグを生成できません。手動で指定してください'] });
 		}
 	}
 	if (result.data.category !== undefined) {
