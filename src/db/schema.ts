@@ -1,4 +1,4 @@
-import { pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
@@ -13,14 +13,20 @@ export const profiles = pgTable('profiles', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// タグカテゴリ
+export const tagCategories = pgTable('tag_categories', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	name: text('name').notNull().unique(),
+	slug: text('slug').notNull().unique(),
+	displayOrder: integer('display_order').default(0).notNull(),
+});
+
 // タグ（FF14コンテンツカテゴリ）
 export const tags = pgTable('tags', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	name: text('name').notNull().unique(),
 	slug: text('slug').notNull().unique(),
-	category: text('category', {
-		enum: ['duty', 'job', 'crafting', 'gathering', 'general'],
-	}).notNull(),
+	category: text('category').notNull(),
 });
 
 // 記事

@@ -1,12 +1,10 @@
-import type { InferSelectModel } from 'drizzle-orm';
 import { asc, eq } from 'drizzle-orm';
 import type { Database } from '../db';
 import { tags } from '../db/schema';
 
-type TagRow = InferSelectModel<typeof tags>;
+export type TagCategory = string;
 
-export type TagCategory = TagRow['category'];
-
+/** @deprecated Use listCategories() from categories.ts instead */
 export const TAG_CATEGORIES = ['duty', 'job', 'crafting', 'gathering', 'general'] as const;
 
 export interface TagInfo {

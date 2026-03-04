@@ -1,21 +1,20 @@
 import { Label } from '@/components/ui/label';
 import type { TagInfo } from '@/lib/tags';
 
+export interface CategoryLabel {
+	slug: string;
+	name: string;
+}
+
 interface TagSelectorProps {
 	tags: TagInfo[];
 	selectedIds: string[];
 	onChange: (ids: string[]) => void;
+	categories?: CategoryLabel[];
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-	duty: 'コンテンツ',
-	job: 'ジョブ',
-	crafting: 'クラフター',
-	gathering: 'ギャザラー',
-	general: '全般',
-};
-
-export function TagSelector({ tags, selectedIds, onChange }: TagSelectorProps) {
+export function TagSelector({ tags, selectedIds, onChange, categories }: TagSelectorProps) {
+	const categoryLabels = new Map(categories?.map((c) => [c.slug, c.name]) ?? []);
 	const grouped = new Map<string, TagInfo[]>();
 	for (const tag of tags) {
 		const list = grouped.get(tag.category) ?? [];
@@ -40,7 +39,7 @@ export function TagSelector({ tags, selectedIds, onChange }: TagSelectorProps) {
 			{[...grouped.entries()].map(([category, categoryTags]) => (
 				<div key={category}>
 					<p className="text-xs font-medium text-muted-foreground mb-2">
-						{CATEGORY_LABELS[category] ?? category}
+						{categoryLabels.get(category) ?? category}
 					</p>
 					<div className="flex flex-wrap gap-2">
 						{categoryTags.map((tag) => {

@@ -277,23 +277,20 @@ export function validateCreateReport(data: unknown): ValidationResult<CreateRepo
 	};
 }
 
-// Tag validation
-const TAG_CATEGORIES_VALID = ['duty', 'job', 'crafting', 'gathering', 'general'] as const;
-type TagCategoryValid = (typeof TAG_CATEGORIES_VALID)[number];
-
+// Tag validation (category is now validated against DB at API layer)
 const SLUG_REGEX =
 	/^[a-z0-9\u3000-\u9fff\uf900-\ufaff]([a-z0-9\u3000-\u9fff\uf900-\ufaff-]*[a-z0-9\u3000-\u9fff\uf900-\ufaff])?$/;
 
 export interface CreateTagInput {
 	name: string;
 	slug?: string;
-	category: TagCategoryValid;
+	category: string;
 }
 
 export interface UpdateTagInput {
 	name?: string;
 	slug?: string;
-	category?: TagCategoryValid;
+	category?: string;
 }
 
 export function validateCreateTag(data: unknown): ValidationResult<CreateTagInput> {
@@ -329,8 +326,8 @@ export function validateCreateTag(data: unknown): ValidationResult<CreateTagInpu
 		errors.category = ['category is required'];
 	} else if (typeof obj.category !== 'string') {
 		errors.category = ['category must be a string'];
-	} else if (!(TAG_CATEGORIES_VALID as readonly string[]).includes(obj.category)) {
-		errors.category = [`category must be one of: ${TAG_CATEGORIES_VALID.join(', ')}`];
+	} else if (obj.category.trim().length < 1) {
+		errors.category = ['category must not be empty'];
 	}
 
 	if (Object.keys(errors).length > 0) {
@@ -339,7 +336,7 @@ export function validateCreateTag(data: unknown): ValidationResult<CreateTagInpu
 
 	const result: CreateTagInput = {
 		name: (obj.name as string).trim(),
-		category: obj.category as TagCategoryValid,
+		category: (obj.category as string).trim(),
 	};
 	if (typeof obj.slug === 'string' && obj.slug.trim() !== '') {
 		result.slug = obj.slug.trim();
@@ -393,8 +390,8 @@ export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInpu
 	if (hasCategory) {
 		if (typeof obj.category !== 'string') {
 			errors.category = ['category must be a string'];
-		} else if (!(TAG_CATEGORIES_VALID as readonly string[]).includes(obj.category)) {
-			errors.category = [`category must be one of: ${TAG_CATEGORIES_VALID.join(', ')}`];
+		} else if (obj.category.trim().length < 1) {
+			errors.category = ['category must not be empty'];
 		}
 	}
 
@@ -405,7 +402,127 @@ export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInpu
 	const result: UpdateTagInput = {};
 	if (hasName) result.name = (obj.name as string).trim();
 	if (hasSlug) result.slug = (obj.slug as string).trim();
-	if (hasCategory) result.category = obj.category as TagCategoryValid;
+	if (hasCategory) result.category = (obj.category as string).trim();
+
+	return { success: true, data: result };
+}
+
+// Category validation
+const CATEGORY_SLUG_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+export interface CreateCategoryInput {
+	name: string;
+	slug: string;
+	displayOrder?: number;
+}
+
+export interface UpdateCategoryInput {
+	name?: string;
+	slug?: string;
+	displayOrder?: number;
+}
+
+export function validateCreateCategory(data: unknown): ValidationResult<CreateCategoryInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// name
+	if (obj.name === undefined || obj.name === null) {
+		errors.name = ['name is required'];
+	} else if (typeof obj.name !== 'string') {
+		errors.name = ['name must be a string'];
+	} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
+		errors.name = ['name must be between 1 and 50 characters'];
+	}
+
+	// slug
+	if (obj.slug === undefined || obj.slug === null) {
+		errors.slug = ['slug is required'];
+	} else if (typeof obj.slug !== 'string') {
+		errors.slug = ['slug must be a string'];
+	} else if (obj.slug.length > 50) {
+		errors.slug = ['slug must be at most 50 characters'];
+	} else if (!CATEGORY_SLUG_REGEX.test(obj.slug)) {
+		errors.slug = ['slugは小文字英数字とハイフンのみ使用できます'];
+	}
+
+	// displayOrder (optional)
+	if (obj.displayOrder !== undefined && obj.displayOrder !== null) {
+		if (typeof obj.displayOrder !== 'number' || !Number.isInteger(obj.displayOrder)) {
+			errors.displayOrder = ['displayOrder must be an integer'];
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	const result: CreateCategoryInput = {
+		name: (obj.name as string).trim(),
+		slug: (obj.slug as string).trim(),
+	};
+	if (typeof obj.displayOrder === 'number') {
+		result.displayOrder = obj.displayOrder;
+	}
+
+	return { success: true, data: result };
+}
+
+export function validateUpdateCategory(data: unknown): ValidationResult<UpdateCategoryInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	const hasName = obj.name !== undefined;
+	const hasSlug = obj.slug !== undefined;
+	const hasDisplayOrder = obj.displayOrder !== undefined;
+
+	if (!hasName && !hasSlug && !hasDisplayOrder) {
+		return {
+			success: false,
+			errors: { _: ['At least one field must be provided'] },
+		};
+	}
+
+	if (hasName) {
+		if (typeof obj.name !== 'string') {
+			errors.name = ['name must be a string'];
+		} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
+			errors.name = ['name must be between 1 and 50 characters'];
+		}
+	}
+
+	if (hasSlug) {
+		if (typeof obj.slug !== 'string') {
+			errors.slug = ['slug must be a string'];
+		} else if (obj.slug.length > 50) {
+			errors.slug = ['slug must be at most 50 characters'];
+		} else if (!CATEGORY_SLUG_REGEX.test(obj.slug)) {
+			errors.slug = ['slugは小文字英数字とハイフンのみ使用できます'];
+		}
+	}
+
+	if (hasDisplayOrder) {
+		if (typeof obj.displayOrder !== 'number' || !Number.isInteger(obj.displayOrder)) {
+			errors.displayOrder = ['displayOrder must be an integer'];
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	const result: UpdateCategoryInput = {};
+	if (hasName) result.name = (obj.name as string).trim();
+	if (hasSlug) result.slug = (obj.slug as string).trim();
+	if (hasDisplayOrder) result.displayOrder = obj.displayOrder as number;
 
 	return { success: true, data: result };
 }

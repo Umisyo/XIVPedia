@@ -1,8 +1,7 @@
 import type { APIContext } from 'astro';
-import { listCategorySlugs } from '../../../../lib/categories';
+import { createCategory, listCategories } from '../../../../lib/categories';
 import { forbidden, unauthorized, validationError } from '../../../../lib/errors';
-import { createTag, generateTagSlug, listTags } from '../../../../lib/tags';
-import { validateCreateTag } from '../../../../lib/validation';
+import { validateCreateCategory } from '../../../../lib/validation';
 
 export async function GET(context: APIContext): Promise<Response> {
 	const { db, currentUser } = context.locals;
@@ -15,9 +14,9 @@ export async function GET(context: APIContext): Promise<Response> {
 		return forbidden();
 	}
 
-	const tagList = await listTags(db);
+	const categories = await listCategories(db);
 
-	return new Response(JSON.stringify({ tags: tagList }), {
+	return new Response(JSON.stringify({ categories }), {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' },
 	});
@@ -41,36 +40,25 @@ export async function POST(context: APIContext): Promise<Response> {
 		return validationError({ _: ['Request body must be valid JSON'] });
 	}
 
-	const result = validateCreateTag(body);
+	const result = validateCreateCategory(body);
 	if (!result.success) {
 		return validationError(result.errors);
 	}
 
-	// カテゴリの存在チェック
-	const validSlugs = await listCategorySlugs(db);
-	if (!validSlugs.includes(result.data.category)) {
-		return validationError({ category: ['指定されたカテゴリは存在しません'] });
-	}
-
-	const slug = result.data.slug ?? generateTagSlug(result.data.name);
-	if (!slug) {
-		return validationError({ slug: ['スラグを生成できません。手動で指定してください'] });
-	}
-
 	try {
-		const tag = await createTag(db, {
+		const category = await createCategory(db, {
 			name: result.data.name,
-			slug,
-			category: result.data.category,
+			slug: result.data.slug,
+			displayOrder: result.data.displayOrder,
 		});
 
-		return new Response(JSON.stringify({ tag }), {
+		return new Response(JSON.stringify({ category }), {
 			status: 201,
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (err) {
 		if (err instanceof Error && err.message.includes('unique')) {
-			return validationError({ name: ['同じ名前またはスラグのタグが既に存在します'] });
+			return validationError({ slug: ['同じ名前またはスラグのカテゴリが既に存在します'] });
 		}
 		throw err;
 	}

@@ -7,20 +7,16 @@ interface Tag {
 	category: string;
 }
 
-type TagCategory = 'duty' | 'job' | 'crafting' | 'gathering' | 'general';
-
-const CATEGORY_LABELS: Record<string, string> = {
-	duty: 'コンテンツ',
-	job: 'ジョブ',
-	crafting: 'クラフター',
-	gathering: 'ギャザラー',
-	general: '全般',
-};
-
-const CATEGORIES: TagCategory[] = ['duty', 'job', 'crafting', 'gathering', 'general'];
+interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	displayOrder: number;
+}
 
 export default function TagManagement() {
 	const [tags, setTags] = useState<Tag[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -29,7 +25,7 @@ export default function TagManagement() {
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [newName, setNewName] = useState('');
 	const [newSlug, setNewSlug] = useState('');
-	const [newCategory, setNewCategory] = useState<TagCategory>('general');
+	const [newCategory, setNewCategory] = useState('');
 	const [isCreating, setIsCreating] = useState(false);
 	const [createErrors, setCreateErrors] = useState<Record<string, string[]>>({});
 
@@ -37,7 +33,7 @@ export default function TagManagement() {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editName, setEditName] = useState('');
 	const [editSlug, setEditSlug] = useState('');
-	const [editCategory, setEditCategory] = useState<TagCategory>('general');
+	const [editCategory, setEditCategory] = useState('');
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [editErrors, setEditErrors] = useState<Record<string, string[]>>({});
 
@@ -45,27 +41,33 @@ export default function TagManagement() {
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 
-	const fetchTags = useCallback(async () => {
+	const categoryLabels = new Map(categories.map((c) => [c.slug, c.name]));
+
+	const fetchData = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
-
 		try {
-			const res = await fetch('/api/admin/tags');
-			if (!res.ok) {
-				throw new Error('タグ一覧の取得に失敗しました');
+			const [tagsRes, catsRes] = await Promise.all([
+				fetch('/api/admin/tags'),
+				fetch('/api/admin/categories'),
+			]);
+			if (!tagsRes.ok || !catsRes.ok) throw new Error('データの取得に失敗しました');
+			const [tagsJson, catsJson] = await Promise.all([tagsRes.json(), catsRes.json()]);
+			setTags(tagsJson.tags);
+			setCategories(catsJson.categories);
+			if (catsJson.categories.length > 0) {
+				setNewCategory((prev) => prev || catsJson.categories[0].slug);
 			}
-			const json = await res.json();
-			setTags(json.tags);
 		} catch {
-			setError('タグ一覧の取得に失敗しました');
+			setError('データの取得に失敗しました');
 		} finally {
 			setIsLoading(false);
 		}
 	}, []);
 
 	useEffect(() => {
-		fetchTags();
-	}, [fetchTags]);
+		fetchData();
+	}, [fetchData]);
 
 	useEffect(() => {
 		if (toast) {
@@ -77,7 +79,6 @@ export default function TagManagement() {
 	async function handleCreate() {
 		setIsCreating(true);
 		setCreateErrors({});
-
 		try {
 			const payload: Record<string, string> = { name: newName, category: newCategory };
 			if (newSlug.trim()) payload.slug = newSlug.trim();
@@ -86,22 +87,16 @@ export default function TagManagement() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),
 			});
-
 			if (!res.ok) {
 				const json = await res.json().catch(() => null);
-				if (json?.error?.details) {
-					setCreateErrors(json.error.details);
-				} else {
-					setCreateErrors({ _: [json?.error?.message ?? 'タグの作成に失敗しました'] });
-				}
+				if (json?.error?.details) setCreateErrors(json.error.details);
+				else setCreateErrors({ _: [json?.error?.message ?? 'タグの作成に失敗しました'] });
 				return;
 			}
-
 			const json = await res.json();
 			setTags((prev) => [...prev, json.tag].sort((a, b) => a.name.localeCompare(b.name)));
 			setNewName('');
 			setNewSlug('');
-			setNewCategory('general');
 			setShowCreateForm(false);
 			setToast({ message: 'タグを作成しました', type: 'success' });
 		} catch {
@@ -115,7 +110,7 @@ export default function TagManagement() {
 		setEditingId(tag.id);
 		setEditName(tag.name);
 		setEditSlug(tag.slug);
-		setEditCategory(tag.category as TagCategory);
+		setEditCategory(tag.category);
 		setEditErrors({});
 	}
 
@@ -128,24 +123,18 @@ export default function TagManagement() {
 		if (!editingId) return;
 		setIsUpdating(true);
 		setEditErrors({});
-
 		try {
 			const res = await fetch(`/api/admin/tags/${editingId}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name: editName, slug: editSlug, category: editCategory }),
 			});
-
 			if (!res.ok) {
 				const json = await res.json().catch(() => null);
-				if (json?.error?.details) {
-					setEditErrors(json.error.details);
-				} else {
-					setEditErrors({ _: [json?.error?.message ?? 'タグの更新に失敗しました'] });
-				}
+				if (json?.error?.details) setEditErrors(json.error.details);
+				else setEditErrors({ _: [json?.error?.message ?? 'タグの更新に失敗しました'] });
 				return;
 			}
-
 			const json = await res.json();
 			setTags((prev) => prev.map((t) => (t.id === editingId ? json.tag : t)));
 			setEditingId(null);
@@ -159,14 +148,12 @@ export default function TagManagement() {
 
 	async function handleDelete(id: string) {
 		setIsDeleting(true);
-
 		try {
 			const res = await fetch(`/api/admin/tags/${id}`, { method: 'DELETE' });
 			if (!res.ok) {
 				const json = await res.json().catch(() => null);
 				throw new Error(json?.error?.message ?? 'タグの削除に失敗しました');
 			}
-
 			setTags((prev) => prev.filter((t) => t.id !== id));
 			setDeletingId(null);
 			setToast({ message: 'タグを削除しました', type: 'success' });
@@ -188,6 +175,10 @@ export default function TagManagement() {
 		grouped.set(tag.category, list);
 	}
 
+	// カテゴリ順序に従ってソート (DBに無いカテゴリは末尾)
+	const orderedCategorySlugs = categories.map((c) => c.slug);
+	const allCategorySlugs = [...new Set([...orderedCategorySlugs, ...grouped.keys()])];
+
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
@@ -200,7 +191,7 @@ export default function TagManagement() {
 		return (
 			<div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
 				{error}
-				<button type="button" onClick={fetchTags} className="ml-2 underline hover:no-underline">
+				<button type="button" onClick={fetchData} className="ml-2 underline hover:no-underline">
 					再読み込み
 				</button>
 			</div>
@@ -209,7 +200,6 @@ export default function TagManagement() {
 
 	return (
 		<div>
-			{/* トースト */}
 			{toast && (
 				<div
 					className={`fixed top-4 right-4 z-50 rounded-md px-4 py-3 text-sm shadow-lg transition-all ${
@@ -231,13 +221,19 @@ export default function TagManagement() {
 							setShowCreateForm(!showCreateForm);
 							setCreateErrors({});
 						}}
-						className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+						disabled={categories.length === 0}
+						className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
 					>
 						{showCreateForm ? 'キャンセル' : '新規追加'}
 					</button>
 				</div>
 
-				{/* 新規作成フォーム */}
+				{categories.length === 0 && (
+					<div className="p-4 bg-muted/30 border-b border-border text-sm text-muted-foreground">
+						タグを追加するには、先にカテゴリを作成してください。
+					</div>
+				)}
+
 				{showCreateForm && (
 					<div className="border-b border-border p-4 bg-muted/30">
 						<div className="space-y-3 max-w-md">
@@ -295,12 +291,12 @@ export default function TagManagement() {
 								<select
 									id="new-tag-category"
 									value={newCategory}
-									onChange={(e) => setNewCategory(e.target.value as TagCategory)}
+									onChange={(e) => setNewCategory(e.target.value)}
 									className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
 								>
-									{CATEGORIES.map((cat) => (
-										<option key={cat} value={cat}>
-											{CATEGORY_LABELS[cat]}
+									{categories.map((cat) => (
+										<option key={cat.slug} value={cat.slug}>
+											{cat.name}
 										</option>
 									))}
 								</select>
@@ -322,7 +318,6 @@ export default function TagManagement() {
 					</div>
 				)}
 
-				{/* 削除確認ダイアログ */}
 				{deletingId && (
 					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 						<div className="rounded-lg border border-border bg-card p-6 shadow-lg max-w-sm mx-4">
@@ -352,27 +347,25 @@ export default function TagManagement() {
 					</div>
 				)}
 
-				{/* タグ一覧 (カテゴリ別) */}
 				<div className="divide-y divide-border">
 					{tags.length === 0 ? (
 						<div className="p-8 text-center text-sm text-muted-foreground">
 							タグがまだ登録されていません
 						</div>
 					) : (
-						CATEGORIES.map((category) => {
-							const categoryTags = grouped.get(category);
+						allCategorySlugs.map((catSlug) => {
+							const categoryTags = grouped.get(catSlug);
 							if (!categoryTags || categoryTags.length === 0) return null;
 
 							return (
-								<div key={category} className="p-4">
+								<div key={catSlug} className="p-4">
 									<h3 className="text-sm font-medium text-muted-foreground mb-3">
-										{CATEGORY_LABELS[category]} ({categoryTags.length})
+										{categoryLabels.get(catSlug) ?? catSlug} ({categoryTags.length})
 									</h3>
 									<div className="space-y-2">
 										{categoryTags.map((tag) => (
 											<div key={tag.id}>
 												{editingId === tag.id ? (
-													// 編集フォーム
 													<div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-3">
 														{editErrors._ && (
 															<p className="text-sm text-destructive">{editErrors._.join(', ')}</p>
@@ -400,12 +393,12 @@ export default function TagManagement() {
 															</div>
 															<select
 																value={editCategory}
-																onChange={(e) => setEditCategory(e.target.value as TagCategory)}
+																onChange={(e) => setEditCategory(e.target.value)}
 																className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground self-end"
 															>
-																{CATEGORIES.map((cat) => (
-																	<option key={cat} value={cat}>
-																		{CATEGORY_LABELS[cat]}
+																{categories.map((cat) => (
+																	<option key={cat.slug} value={cat.slug}>
+																		{cat.name}
 																	</option>
 																))}
 															</select>
@@ -455,7 +448,6 @@ export default function TagManagement() {
 														</div>
 													</div>
 												) : (
-													// 表示モード
 													<div className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50 transition-colors group">
 														<div className="flex items-center gap-2">
 															<span className="text-sm text-foreground">{tag.name}</span>
