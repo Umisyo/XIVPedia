@@ -1,5 +1,6 @@
 ---
 import MobileNav from './MobileNav.tsx';
+import SearchBar from './SearchBar.astro';
 import UserMenu from './UserMenu.tsx';
 
 const currentUser = Astro.locals.currentUser;
@@ -14,7 +15,7 @@ const currentUser = Astro.locals.currentUser;
 			</a>
 
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex items-center gap-6">
+			<nav class="hidden md:flex items-center gap-4">
 				<a
 					href="/articles"
 					class="text-muted-foreground hover:text-foreground transition-colors"
@@ -27,6 +28,9 @@ const currentUser = Astro.locals.currentUser;
 				>
 					タグ
 				</a>
+				<div class="w-48">
+					<SearchBar />
+				</div>
 				{
 					currentUser ? (
 						<>

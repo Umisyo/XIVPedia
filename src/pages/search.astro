@@ -1,0 +1,185 @@
+---
+import Pagination from '../components/Pagination.astro';
+import SearchBar from '../components/SearchBar.astro';
+import Layout from '../layouts/Layout.astro';
+import type { SearchResponse } from '../lib/search';
+import { searchArticles } from '../lib/search';
+
+const q = Astro.url.searchParams.get('q')?.trim() ?? '';
+const page = Math.max(1, Number(Astro.url.searchParams.get('page')) || 1);
+const limit = 20;
+
+let searchData: SearchResponse | null = null;
+let searchError = false;
+
+if (q) {
+	try {
+		searchData = await searchArticles(Astro.locals.db, { query: q, page, limit });
+	} catch {
+		searchError = true;
+	}
+}
+
+const total = searchData?.total ?? 0;
+const totalPages = searchData ? Math.ceil(searchData.total / searchData.limit) : 0;
+const results = searchData?.results ?? [];
+const baseUrl = `/search?q=${encodeURIComponent(q)}`;
+
+function formatDate(dateStr: string | null): string {
+	if (!dateStr) return '';
+	return new Date(dateStr).toLocaleDateString('ja-JP');
+}
+---
+
+<Layout title={q ? `「${q}」の検索結果` : '検索'} description={q ? `「${q}」の検索結果 - XIVPedia` : '記事を検索 - XIVPedia'}>
+	<section class="py-8">
+		{/* 検索フォーム */}
+		<div class="max-w-xl mx-auto">
+			<h1 class="text-3xl font-bold text-foreground mb-6">検索</h1>
+			<SearchBar />
+		</div>
+
+		{/* 検索結果 */}
+		{q ? (
+			<div class="mt-8">
+				{searchError ? (
+					<div class="rounded-lg border border-border bg-card p-12 text-center">
+						<p class="text-muted-foreground">検索中にエラーが発生しました。もう一度お試しください。</p>
+					</div>
+				) : results.length > 0 ? (
+					<>
+						<p class="text-muted-foreground mb-6">
+							「<span class="text-foreground font-medium">{q}</span>」の検索結果（{total}件）
+						</p>
+						<div class="flex flex-col gap-4">
+							{results.map((result) => (
+								<article class="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors">
+									<a href={`/articles/${result.slug}`} class="block group">
+										<h2 class="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+											{result.title}
+										</h2>
+									</a>
+
+									{/* 抜粋テキスト */}
+									{result.excerpt && (
+										<p class="mt-2 text-sm text-muted-foreground line-clamp-3">
+											{result.excerpt}
+										</p>
+									)}
+
+									{/* 著者・日付・リアクション */}
+									<div class="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
+										<div class="flex items-center gap-1.5">
+											{result.author.avatarUrl ? (
+												<img
+													src={result.author.avatarUrl}
+													alt={result.author.displayName}
+													class="w-5 h-5 rounded-full"
+													loading="lazy"
+												/>
+											) : (
+												<span class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs">
+													{result.author.displayName.charAt(0)}
+												</span>
+											)}
+											<span>{result.author.displayName}</span>
+										</div>
+										{result.publishedAt && (
+											<time datetime={result.publishedAt}>
+												{formatDate(result.publishedAt)}
+											</time>
+										)}
+										{result.reactionCount > 0 && (
+											<div class="flex items-center gap-1">
+												{/* ハートアイコン（lucide の Heart を SVG で直接記述） */}
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="14"
+													height="14"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													class="text-muted-foreground"
+												>
+													<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+												</svg>
+												<span>{result.reactionCount}</span>
+											</div>
+										)}
+									</div>
+
+									{/* タグ */}
+									{result.tags.length > 0 && (
+										<div class="mt-3 flex flex-wrap gap-2">
+											{result.tags.map((tag) => (
+												<a
+													href={`/articles?tag=${encodeURIComponent(tag.slug)}`}
+													class="inline-block rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+												>
+													{tag.name}
+												</a>
+											))}
+										</div>
+									)}
+								</article>
+							))}
+						</div>
+
+						{/* ページネーション */}
+						{totalPages > 1 && (
+							<div class="mt-8">
+								<Pagination
+									currentPage={page}
+									totalPages={totalPages}
+									baseUrl={baseUrl}
+								/>
+							</div>
+						)}
+					</>
+				) : (
+					<div class="rounded-lg border border-border bg-card p-12 text-center">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="48"
+							height="48"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="mx-auto text-muted-foreground mb-4"
+						>
+							<circle cx="11" cy="11" r="8" />
+							<path d="m21 21-4.3-4.3" />
+						</svg>
+						<p class="text-muted-foreground">検索結果が見つかりませんでした</p>
+						<p class="text-sm text-muted-foreground mt-2">別のキーワードで検索してみてください</p>
+					</div>
+				)}
+			</div>
+		) : (
+			<div class="mt-8 rounded-lg border border-border bg-card p-12 text-center">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="48"
+					height="48"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="mx-auto text-muted-foreground mb-4"
+				>
+					<circle cx="11" cy="11" r="8" />
+					<path d="m21 21-4.3-4.3" />
+				</svg>
+				<p class="text-muted-foreground">キーワードを入力して記事を検索してください</p>
+			</div>
+		)}
+	</section>
+</Layout>
