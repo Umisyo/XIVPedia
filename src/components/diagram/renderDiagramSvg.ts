@@ -110,13 +110,25 @@ export function renderDiagramSvg(data: DiagramData): string {
 	return parts.join('');
 }
 
+function isValidMarker(m: unknown): m is { role: string; x: number; y: number } {
+	if (typeof m !== 'object' || m === null) return false;
+	const obj = m as Record<string, unknown>;
+	return typeof obj.role === 'string' && typeof obj.x === 'number' && typeof obj.y === 'number';
+}
+
+function isValidWaymark(w: unknown): w is { label: string; x: number; y: number } {
+	if (typeof w !== 'object' || w === null) return false;
+	const obj = w as Record<string, unknown>;
+	return typeof obj.label === 'string' && typeof obj.x === 'number' && typeof obj.y === 'number';
+}
+
 export function parseDiagramJson(json: string): DiagramData | null {
 	try {
-		const data = JSON.parse(json) as DiagramData;
+		const data = JSON.parse(json) as Record<string, unknown>;
 		if (data.fieldType !== 'circle') return null;
-		if (!Array.isArray(data.markers)) return null;
-		if (!Array.isArray(data.waymarks)) return null;
-		return data;
+		if (!Array.isArray(data.markers) || !data.markers.every(isValidMarker)) return null;
+		if (!Array.isArray(data.waymarks) || !data.waymarks.every(isValidWaymark)) return null;
+		return data as unknown as DiagramData;
 	} catch {
 		return null;
 	}

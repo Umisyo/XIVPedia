@@ -17,6 +17,7 @@ const INITIAL_DATA: DiagramData = {
 
 export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 	const [data, setData] = useState<DiagramData>(INITIAL_DATA);
+	const [editorKey, setEditorKey] = useState(0);
 	const overlayRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -62,6 +63,7 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 
 	const handleClear = useCallback(() => {
 		setData({ ...INITIAL_DATA });
+		setEditorKey((k) => k + 1);
 	}, []);
 
 	if (!isOpen) return null;
@@ -75,7 +77,7 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 			<div className="relative w-full max-w-3xl mx-4 rounded-lg border border-border bg-background p-6 shadow-lg">
 				<h2 className="text-lg font-semibold mb-4">散開図エディタ</h2>
 
-				<DiagramEditor initialData={data} onChange={setData} />
+				<DiagramEditor key={editorKey} initialData={data} onChange={setData} />
 
 				<div className="flex justify-between mt-4">
 					<Button type="button" variant="outline" onClick={handleClear}>
