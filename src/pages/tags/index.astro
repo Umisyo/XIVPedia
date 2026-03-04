@@ -1,0 +1,57 @@
+---
+import { count, eq } from 'drizzle-orm';
+import TagList from '../../components/TagList.astro';
+import { articles, articleTags } from '../../db/schema';
+import Layout from '../../layouts/Layout.astro';
+import { groupTagsByCategory, listTags, TAG_CATEGORIES } from '../../lib/tags';
+
+const allTags = await listTags(Astro.locals.db);
+const grouped = groupTagsByCategory(allTags);
+
+const tagCounts = await Astro.locals.db
+	.select({
+		tagId: articleTags.tagId,
+		count: count(),
+	})
+	.from(articleTags)
+	.innerJoin(articles, eq(articleTags.articleId, articles.id))
+	.where(eq(articles.status, 'published'))
+	.groupBy(articleTags.tagId);
+
+const countMap = new Map(tagCounts.map((r) => [r.tagId, r.count]));
+
+const categoryNames: Record<string, string> = {
+	duty: 'コンテンツ',
+	job: 'ジョブ',
+	crafting: 'クラフター',
+	gathering: 'ギャザラー',
+	general: 'その他',
+};
+---
+
+<Layout title="タグ一覧" description="XIVPedia - タグ一覧">
+	<section class="py-8">
+		<h1 class="text-3xl font-bold text-foreground">タグ一覧</h1>
+
+		<div class="mt-8 space-y-10">
+			{TAG_CATEGORIES.map((category) => {
+				const tagsInCategory = grouped[category];
+				if (!tagsInCategory || tagsInCategory.length === 0) return null;
+
+				const tagsWithCount = tagsInCategory.map(t => ({
+					...t,
+					articleCount: countMap.get(t.id) ?? 0,
+				}));
+
+				return (
+					<section>
+						<h2 class="text-2xl font-bold text-foreground mb-6">
+							{categoryNames[category]}
+						</h2>
+						<TagList tags={tagsWithCount} />
+					</section>
+				);
+			})}
+		</div>
+	</section>
+</Layout>

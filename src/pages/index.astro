@@ -2,11 +2,23 @@
 import ArticleCard from '../components/ArticleCard.astro';
 import Layout from '../layouts/Layout.astro';
 import { listArticles } from '../lib/articles';
+import { groupTagsByCategory, listTags, TAG_CATEGORIES } from '../lib/tags';
 
-const { data: articles } = await listArticles(Astro.locals.db, {
-	limit: 10,
-	status: 'published',
-});
+const categoryLabels: Record<string, string> = {
+	duty: 'コンテンツ',
+	job: 'ジョブ',
+	crafting: 'クラフター',
+	gathering: 'ギャザラー',
+	general: 'その他',
+};
+
+const [{ data: popularArticles }, { data: newestArticles }, allTags] = await Promise.all([
+	listArticles(Astro.locals.db, { limit: 6, sort: 'popular', status: 'published' }),
+	listArticles(Astro.locals.db, { limit: 6, sort: 'newest', status: 'published' }),
+	listTags(Astro.locals.db),
+]);
+
+const groupedTags = groupTagsByCategory(allTags);
 ---
 
 <Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト">
@@ -20,12 +32,12 @@ const { data: articles } = await listArticles(Astro.locals.db, {
 		</p>
 	</section>
 
-	<section class="pb-16">
-		<h2 class="text-2xl font-bold text-foreground mb-6">最新の記事</h2>
+	<section class="pb-12">
+		<h2 class="text-2xl font-bold text-foreground mb-6">🔥 人気の記事</h2>
 
-		{articles.length > 0 ? (
+		{popularArticles.length > 0 ? (
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				{articles.map((article) => (
+				{popularArticles.map((article) => (
 					<ArticleCard
 						title={article.title}
 						slug={article.slug}
@@ -33,6 +45,7 @@ const { data: articles } = await listArticles(Astro.locals.db, {
 						tags={article.tags}
 						publishedAt={article.publishedAt}
 						createdAt={article.createdAt}
+						reactionCount={article.reactionCount}
 					/>
 				))}
 			</div>
@@ -41,5 +54,57 @@ const { data: articles } = await listArticles(Astro.locals.db, {
 				<p class="text-muted-foreground">まだ記事がありません。</p>
 			</div>
 		)}
+	</section>
+
+	<section class="pb-12">
+		<h2 class="text-2xl font-bold text-foreground mb-6">🆕 新着記事</h2>
+
+		{newestArticles.length > 0 ? (
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{newestArticles.map((article) => (
+					<ArticleCard
+						title={article.title}
+						slug={article.slug}
+						author={article.author}
+						tags={article.tags}
+						publishedAt={article.publishedAt}
+						createdAt={article.createdAt}
+						reactionCount={article.reactionCount}
+					/>
+				))}
+			</div>
+		) : (
+			<div class="rounded-lg border border-border bg-card p-12 text-center">
+				<p class="text-muted-foreground">まだ記事がありません。</p>
+			</div>
+		)}
+	</section>
+
+	<section class="pb-16">
+		<h2 class="text-2xl font-bold text-foreground mb-6">🏷️ カテゴリ</h2>
+
+		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			{TAG_CATEGORIES.map((category) => {
+				const tagsInCategory = groupedTags[category] ?? [];
+				if (tagsInCategory.length === 0) return null;
+				return (
+					<div class="bg-card rounded-lg border border-border p-6">
+						<h3 class="text-lg font-bold text-foreground mb-4">
+							{categoryLabels[category] ?? category}
+						</h3>
+						<div class="flex flex-wrap gap-2">
+							{tagsInCategory.map((tag) => (
+								<a
+									href={`/tags/${tag.slug}`}
+									class="inline-block rounded-md bg-secondary px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+								>
+									{tag.name}
+								</a>
+							))}
+						</div>
+					</div>
+				);
+			})}
+		</div>
 	</section>
 </Layout>

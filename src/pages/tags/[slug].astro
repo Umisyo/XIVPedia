@@ -1,0 +1,94 @@
+---
+import ArticleCard from '../../components/ArticleCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import Layout from '../../layouts/Layout.astro';
+import { listArticles } from '../../lib/articles';
+import { listTags } from '../../lib/tags';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/tags');
+
+const allTags = await listTags(Astro.locals.db);
+const currentTag = allTags.find((t) => t.slug === slug);
+if (!currentTag) return Astro.redirect('/tags');
+
+const page = Math.max(1, Number(Astro.url.searchParams.get('page')) || 1);
+const sort = Astro.url.searchParams.get('sort') === 'popular' ? 'popular' : 'newest';
+
+const { data: articles, meta } = await listArticles(Astro.locals.db, {
+	page,
+	limit: 12,
+	sort,
+	tag: slug,
+	status: 'published',
+});
+
+const totalPages = Math.ceil(meta.total / meta.limit);
+const baseUrl = `/tags/${slug}?sort=${sort}`;
+const pageTitle = `タグ: ${currentTag.name}の記事`;
+
+function sortUrl(sortValue: 'newest' | 'popular'): string {
+	return `/tags/${slug}?sort=${sortValue}`;
+}
+---
+
+<Layout title={pageTitle} description={`XIVPedia - ${pageTitle}`}>
+	<section class="py-8">
+		<h1 class="text-3xl font-bold text-foreground">{pageTitle}</h1>
+
+		<div class="mt-6 flex items-center gap-2">
+			<a
+				href={sortUrl('newest')}
+				class:list={[
+					'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
+					sort === 'newest'
+						? 'bg-primary text-primary-foreground border-primary'
+						: 'bg-card text-muted-foreground border-border hover:text-foreground',
+				]}
+			>
+				新着順
+			</a>
+			<a
+				href={sortUrl('popular')}
+				class:list={[
+					'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
+					sort === 'popular'
+						? 'bg-primary text-primary-foreground border-primary'
+						: 'bg-card text-muted-foreground border-border hover:text-foreground',
+				]}
+			>
+				人気順
+			</a>
+		</div>
+
+		{articles.length > 0 ? (
+			<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{articles.map((article) => (
+					<ArticleCard
+						title={article.title}
+						slug={article.slug}
+						author={article.author}
+						tags={article.tags}
+						publishedAt={article.publishedAt}
+						createdAt={article.createdAt}
+						reactionCount={article.reactionCount}
+					/>
+				))}
+			</div>
+		) : (
+			<div class="mt-8 rounded-lg border border-border bg-card p-12 text-center">
+				<p class="text-muted-foreground">このタグの記事はまだありません</p>
+			</div>
+		)}
+
+		{totalPages > 1 && (
+			<div class="mt-8">
+				<Pagination
+					currentPage={page}
+					totalPages={totalPages}
+					baseUrl={baseUrl}
+				/>
+			</div>
+		)}
+	</section>
+</Layout>

@@ -29,6 +29,13 @@ export default function MobileNav({ user }: Props) {
 						>
 							記事一覧
 						</a>
+						<a
+							href="/tags"
+							className="text-muted-foreground hover:text-foreground transition-colors py-2"
+							onClick={() => setIsOpen(false)}
+						>
+							タグ
+						</a>
 						{user ? (
 							<>
 								<a
@@ -37,6 +44,13 @@ export default function MobileNav({ user }: Props) {
 									onClick={() => setIsOpen(false)}
 								>
 									投稿
+								</a>
+								<a
+									href="/mypage"
+									className="text-muted-foreground hover:text-foreground transition-colors py-2"
+									onClick={() => setIsOpen(false)}
+								>
+									マイページ
 								</a>
 								<div className="flex items-center gap-2 py-2">
 									{user.avatarUrl ? (
