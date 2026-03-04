@@ -1,8 +1,8 @@
-import { LogOut, Menu, Search, Settings, User, X } from 'lucide-react';
+import { LogOut, Menu, Search, Settings, Shield, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
-	user: { displayName: string; avatarUrl?: string } | null;
+	user: { displayName: string; avatarUrl?: string; role?: string } | null;
 }
 
 export default function MobileNav({ user }: Props) {
@@ -74,6 +74,16 @@ export default function MobileNav({ user }: Props) {
 									)}
 									<span className="text-foreground text-sm">{user.displayName}</span>
 								</div>
+								{user.role === 'admin' && (
+									<a
+										href="/admin"
+										className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"
+										onClick={() => setIsOpen(false)}
+									>
+										<Shield size={16} />
+										管理画面
+									</a>
+								)}
 								<a
 									href="/settings/profile"
 									className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"

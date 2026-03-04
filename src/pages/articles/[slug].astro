@@ -1,6 +1,7 @@
 ---
 import { and, count as countFn, eq } from 'drizzle-orm';
 import ArticleContent from '../../components/ArticleContent.astro';
+import ArticleDeleteButton from '../../components/ArticleDeleteButton.tsx';
 import CommentSection from '../../components/comments/CommentSection.tsx';
 import ReactionButton from '../../components/ReactionButton.tsx';
 import { reactions } from '../../db/schema';
@@ -42,6 +43,7 @@ if (currentUser) {
 }
 
 const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.role === 'admin';
+const isAdmin = currentUser?.profile?.role === 'admin';
 ---
 
 <Layout title={article.title} description={description}>
@@ -52,13 +54,20 @@ const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.r
 					{article.title}
 				</h1>
 				{canEdit && (
-					<a
-						href={`/articles/${article.slug}/edit`}
-						class="inline-flex items-center gap-1.5 shrink-0 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-						編集
-					</a>
+					<div class="flex items-center gap-2 shrink-0">
+						{canEdit && (
+							<a
+								href={`/articles/${article.slug}/edit`}
+								class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+								編集
+							</a>
+						)}
+						{isAdmin && (
+							<ArticleDeleteButton client:load slug={article.slug} />
+						)}
+					</div>
 				)}
 			</div>
 

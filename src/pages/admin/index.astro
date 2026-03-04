@@ -1,0 +1,18 @@
+---
+import UserManagement from '../../components/admin/UserManagement.tsx';
+import Layout from '../../layouts/Layout.astro';
+
+const currentUser = Astro.locals.currentUser;
+
+// admin以外はリダイレクト
+if (!currentUser || currentUser.profile?.role !== 'admin') {
+	return Astro.redirect('/');
+}
+---
+
+<Layout title="管理画面">
+	<div class="py-8 max-w-4xl mx-auto">
+		<h1 class="text-3xl font-bold text-foreground mb-8">管理画面</h1>
+		<UserManagement client:load currentUserId={currentUser.id} />
+	</div>
+</Layout>
