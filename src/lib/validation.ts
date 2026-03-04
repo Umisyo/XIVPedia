@@ -251,6 +251,106 @@ export function validateCreateReport(data: unknown): ValidationResult<CreateRepo
 	};
 }
 
+// Tag validation
+const TAG_CATEGORIES_VALID = ['duty', 'job', 'crafting', 'gathering', 'general'] as const;
+type TagCategoryValid = (typeof TAG_CATEGORIES_VALID)[number];
+
+export interface CreateTagInput {
+	name: string;
+	category: TagCategoryValid;
+}
+
+export interface UpdateTagInput {
+	name?: string;
+	category?: TagCategoryValid;
+}
+
+export function validateCreateTag(data: unknown): ValidationResult<CreateTagInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// name
+	if (obj.name === undefined || obj.name === null) {
+		errors.name = ['name is required'];
+	} else if (typeof obj.name !== 'string') {
+		errors.name = ['name must be a string'];
+	} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
+		errors.name = ['name must be between 1 and 50 characters'];
+	}
+
+	// category
+	if (obj.category === undefined || obj.category === null) {
+		errors.category = ['category is required'];
+	} else if (typeof obj.category !== 'string') {
+		errors.category = ['category must be a string'];
+	} else if (!(TAG_CATEGORIES_VALID as readonly string[]).includes(obj.category)) {
+		errors.category = [`category must be one of: ${TAG_CATEGORIES_VALID.join(', ')}`];
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	return {
+		success: true,
+		data: {
+			name: (obj.name as string).trim(),
+			category: obj.category as TagCategoryValid,
+		},
+	};
+}
+
+export function validateUpdateTag(data: unknown): ValidationResult<UpdateTagInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	const hasName = obj.name !== undefined;
+	const hasCategory = obj.category !== undefined;
+
+	if (!hasName && !hasCategory) {
+		return {
+			success: false,
+			errors: { _: ['At least one field must be provided'] },
+		};
+	}
+
+	// name (optional)
+	if (hasName) {
+		if (typeof obj.name !== 'string') {
+			errors.name = ['name must be a string'];
+		} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
+			errors.name = ['name must be between 1 and 50 characters'];
+		}
+	}
+
+	// category (optional)
+	if (hasCategory) {
+		if (typeof obj.category !== 'string') {
+			errors.category = ['category must be a string'];
+		} else if (!(TAG_CATEGORIES_VALID as readonly string[]).includes(obj.category)) {
+			errors.category = [`category must be one of: ${TAG_CATEGORIES_VALID.join(', ')}`];
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	const result: UpdateTagInput = {};
+	if (hasName) result.name = (obj.name as string).trim();
+	if (hasCategory) result.category = obj.category as TagCategoryValid;
+
+	return { success: true, data: result };
+}
+
 const REPORT_STATUSES = ['resolved', 'dismissed'] as const;
 
 export function validateUpdateReport(data: unknown): ValidationResult<UpdateReportInput> {
