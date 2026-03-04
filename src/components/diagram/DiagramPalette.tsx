@@ -12,9 +12,14 @@ import {
 interface DiagramPaletteProps {
 	existingMarkers: string[];
 	existingWaymarks: string[];
+	onItemPointerDown?: (type: 'marker' | 'waymark', id: string, e: React.PointerEvent) => void;
 }
 
-export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPaletteProps) {
+export function DiagramPalette({
+	existingMarkers,
+	existingWaymarks,
+	onItemPointerDown,
+}: DiagramPaletteProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* ロールセクション */}
@@ -35,11 +40,16 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 									e.dataTransfer.setData('type', 'marker');
 									e.dataTransfer.setData('id', role);
 								}}
+								onPointerDown={(e) => {
+									if (placed || e.pointerType !== 'touch') return;
+									onItemPointerDown?.('marker', role, e);
+								}}
 								className="inline-flex h-8 w-10 items-center justify-center rounded-full text-xs font-bold text-white select-none"
 								style={{
 									backgroundColor: color,
 									opacity: placed ? 0.3 : 1,
 									cursor: placed ? 'default' : 'grab',
+									touchAction: 'none',
 								}}
 							>
 								{role}
@@ -70,6 +80,10 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 									e.dataTransfer.setData('type', 'waymark');
 									e.dataTransfer.setData('id', label);
 								}}
+								onPointerDown={(e) => {
+									if (placed || e.pointerType !== 'touch') return;
+									onItemPointerDown?.('waymark', label, e);
+								}}
 								className={`inline-flex h-8 w-8 items-center justify-center text-xs font-bold text-white select-none ${
 									isNumber ? 'rounded-sm' : 'rounded-full'
 								}`}
@@ -77,6 +91,7 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 									backgroundColor: color,
 									opacity: placed ? 0.3 : 1,
 									cursor: placed ? 'default' : 'grab',
+									touchAction: 'none',
 								}}
 							>
 								{label}
