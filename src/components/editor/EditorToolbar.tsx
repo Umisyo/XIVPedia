@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/react';
 import {
 	Bold,
 	Code,
+	Gamepad2,
 	Heading1,
 	Heading2,
 	Heading3,
@@ -18,11 +19,30 @@ import { Button } from '@/components/ui/button';
 
 interface EditorToolbarProps {
 	editor: Editor;
+	onInsertMacro: (macro: string) => void;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 	const [linkUrl, setLinkUrl] = useState('');
 	const [showLinkInput, setShowLinkInput] = useState(false);
+	const [showMacroDialog, setShowMacroDialog] = useState(false);
+	const [macroText, setMacroText] = useState('');
+
+	const macroLineCount = macroText ? macroText.split('\n').length : 0;
+
+	const insertMacro = useCallback(() => {
+		if (macroText.trim()) {
+			onInsertMacro(macroText.trim());
+		}
+		setMacroText('');
+		setShowMacroDialog(false);
+	}, [macroText, onInsertMacro]);
+
+	const cancelMacro = useCallback(() => {
+		setMacroText('');
+		setShowMacroDialog(false);
+		editor.chain().focus().run();
+	}, [editor]);
 
 	const toggleLink = useCallback(() => {
 		if (editor.isActive('link')) {
@@ -120,6 +140,12 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 			>
 				<Code className="h-4 w-4" />
 			</ToolbarButton>
+
+			<ToolbarSeparator />
+
+			<ToolbarButton onClick={() => setShowMacroDialog(true)} active={false} title="マクロ挿入">
+				<Gamepad2 className="h-4 w-4" />
+			</ToolbarButton>
 			<ToolbarButton onClick={toggleLink} active={editor.isActive('link')} title="リンク">
 				<Link className="h-4 w-4" />
 			</ToolbarButton>
@@ -164,6 +190,43 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 					<Button type="button" variant="ghost" size="xs" onClick={cancelLink}>
 						取消
 					</Button>
+				</div>
+			)}
+
+			{showMacroDialog && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+					<div className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-lg">
+						<h3 className="text-lg font-semibold mb-4">FF14マクロを挿入</h3>
+						<div className="space-y-3">
+							<textarea
+								value={macroText}
+								onChange={(e) => {
+									const lines = e.target.value.split('\n');
+									if (lines.length <= 15) {
+										setMacroText(e.target.value);
+									}
+								}}
+								placeholder={'/ac アクション名 <wait.3>\n/p メッセージ <se.1>'}
+								className="w-full h-48 rounded-md border border-input bg-[#1a1a2e] px-3 py-2 text-sm font-mono text-[#c8d0d8] placeholder:text-[#4a5568] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none resize-none"
+								// biome-ignore lint/a11y/noAutofocus: Macro dialog textarea needs immediate focus
+								autoFocus
+							/>
+							<div className="flex items-center justify-between text-xs text-muted-foreground">
+								<span>各行が / で始まるマクロコマンドです</span>
+								<span className={macroLineCount > 15 ? 'text-destructive' : ''}>
+									{macroLineCount}/15行
+								</span>
+							</div>
+						</div>
+						<div className="flex justify-end gap-2 mt-4">
+							<Button type="button" variant="outline" onClick={cancelMacro}>
+								キャンセル
+							</Button>
+							<Button type="button" onClick={insertMacro} disabled={!macroText.trim()}>
+								挿入
+							</Button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>

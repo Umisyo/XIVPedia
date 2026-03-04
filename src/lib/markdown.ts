@@ -3,6 +3,8 @@ import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 import vitesseDark from 'shiki/themes/vitesse-dark.mjs';
 
+import { renderMacroBlock } from './macro-highlight';
+
 let highlighterPromise: Promise<HighlighterCore> | null = null;
 
 function getHighlighter(): Promise<HighlighterCore> {
@@ -35,6 +37,11 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 
 	const renderer = {
 		code({ text, lang }: { text: string; lang?: string | undefined }) {
+			// FF14マクロブロックは専用レンダラーで処理
+			if (lang === 'ffxiv-macro') {
+				return renderMacroBlock(text);
+			}
+
 			const language = lang || 'text';
 			try {
 				const loadedLangs: string[] = highlighter.getLoadedLanguages();
