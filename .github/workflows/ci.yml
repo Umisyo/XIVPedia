@@ -19,3 +19,27 @@ jobs:
       - run: pnpm biome check .
       - run: pnpm astro check
       - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.TEST_SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - run: pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
