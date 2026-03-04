@@ -45,9 +45,9 @@ export async function POST(context: APIContext): Promise<Response> {
 		return validationError(result.errors);
 	}
 
-	const slug = generateTagSlug(result.data.name);
+	const slug = result.data.slug ?? generateTagSlug(result.data.name);
 	if (!slug) {
-		return validationError({ name: ['タグ名からスラグを生成できません'] });
+		return validationError({ slug: ['スラグを生成できません。手動で指定してください'] });
 	}
 
 	try {
