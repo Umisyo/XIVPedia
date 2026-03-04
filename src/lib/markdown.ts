@@ -2,6 +2,7 @@ import { Marked } from 'marked';
 import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 import vitesseDark from 'shiki/themes/vitesse-dark.mjs';
+import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 
 import { renderMacroBlock } from './macro-highlight';
 
@@ -37,6 +38,13 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 
 	const renderer = {
 		code({ text, lang }: { text: string; lang?: string | undefined }) {
+			if (lang === 'diagram') {
+				const data = parseDiagramJson(text);
+				if (data) {
+					return `<div class="diagram-container">${renderDiagramSvg(data)}</div>`;
+				}
+			}
+
 			// FF14マクロブロックは専用レンダラーで処理
 			if (lang === 'ffxiv-macro') {
 				return renderMacroBlock(text);

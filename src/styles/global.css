@@ -370,6 +370,17 @@
 	pointer-events: none;
 }
 
+/* Diagram (散会図) styles */
+.diagram-container {
+	max-width: 400px;
+	margin: 1.25rem auto;
+}
+.diagram-container svg {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
 /* FF14 Macro Block styles */
 .ffxiv-macro-block {
   margin-top: 1.25rem;

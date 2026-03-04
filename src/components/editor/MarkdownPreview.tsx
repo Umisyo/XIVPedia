@@ -1,12 +1,19 @@
 import DOMPurify from 'dompurify';
 import { Marked } from 'marked';
 import { useCallback, useEffect, useState } from 'react';
+import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 
 import { renderMacroBlock } from '../../lib/macro-highlight';
 
 const marked = new Marked({
 	renderer: {
 		code({ text, lang }: { text: string; lang?: string | undefined }) {
+			if (lang === 'diagram') {
+				const data = parseDiagramJson(text);
+				if (data) {
+					return `<div class="diagram-container">${renderDiagramSvg(data)}</div>`;
+				}
+			}
 			if (lang === 'ffxiv-macro') {
 				return renderMacroBlock(text);
 			}
@@ -31,8 +38,36 @@ export function MarkdownPreview({ body }: MarkdownPreviewProps) {
 			// Content is sanitized via DOMPurify to prevent XSS
 			const sanitized = DOMPurify.sanitize(raw, {
 				FORCE_BODY: true,
-				ADD_TAGS: ['button'],
-				ADD_ATTR: ['data-macro-text', 'class'],
+				ADD_TAGS: ['svg', 'circle', 'rect', 'line', 'text', 'g', 'defs', 'clipPath', 'button'],
+				ADD_ATTR: [
+					'viewBox',
+					'fill',
+					'stroke',
+					'stroke-width',
+					'stroke-dasharray',
+					'cx',
+					'cy',
+					'r',
+					'x',
+					'y',
+					'x1',
+					'y1',
+					'x2',
+					'y2',
+					'width',
+					'height',
+					'rx',
+					'ry',
+					'opacity',
+					'text-anchor',
+					'font-size',
+					'font-weight',
+					'font-family',
+					'xmlns',
+					'd',
+					'data-macro-text',
+					'class',
+				],
 			});
 			if (!cancelled) {
 				setHtml(sanitized);

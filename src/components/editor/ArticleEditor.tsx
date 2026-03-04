@@ -1,5 +1,6 @@
-import { Eye, Gamepad2, Pen, Save, Send } from 'lucide-react';
+import { Eye, Gamepad2, Grid2x2, Pen, Save, Send } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { DiagramModal } from '@/components/diagram/DiagramModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +41,11 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 	const [editorMode, setEditorMode] = useState<EditorMode>('visual');
 	const [richEditorKey, setRichEditorKey] = useState(0);
+	const [isDiagramOpen, setIsDiagramOpen] = useState(false);
+
+	const handleDiagramInsert = useCallback((codeFence: string) => {
+		setBody((prev) => `${prev}\n${codeFence}\n`);
+	}, []);
 
 	const [showMacroDialogMd, setShowMacroDialogMd] = useState(false);
 	const [macroTextMd, setMacroTextMd] = useState('');
@@ -285,6 +291,12 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				)}
 			</div>
 
+			{/* Diagram button */}
+			<Button type="button" variant="outline" onClick={() => setIsDiagramOpen(true)}>
+				<Grid2x2 className="h-4 w-4" />
+				散開図
+			</Button>
+
 			{/* Image uploader & Macro insert (Markdown mode only) */}
 			{editorMode === 'markdown' && (
 				<div className="space-y-3">
@@ -356,6 +368,11 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 					公開する
 				</Button>
 			</div>
+			<DiagramModal
+				isOpen={isDiagramOpen}
+				onClose={() => setIsDiagramOpen(false)}
+				onInsert={handleDiagramInsert}
+			/>
 		</div>
 	);
 }
