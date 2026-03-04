@@ -1,4 +1,4 @@
-import { Eye, Grid2x2, Pen, Save, Send } from 'lucide-react';
+import { Eye, Gamepad2, Grid2x2, Pen, Save, Send } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { DiagramModal } from '@/components/diagram/DiagramModal';
 import { Button } from '@/components/ui/button';
@@ -47,8 +47,32 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 		setBody((prev) => `${prev}\n${codeFence}\n`);
 	}, []);
 
+	const [showMacroDialogMd, setShowMacroDialogMd] = useState(false);
+	const [macroTextMd, setMacroTextMd] = useState('');
+
+	const macroLineCountMd = macroTextMd ? macroTextMd.split('\n').length : 0;
+
 	const handleImageInsert = useCallback((markdown: string) => {
 		setBody((prev) => `${prev}\n${markdown}\n`);
+	}, []);
+
+	const handleInsertMacro = useCallback((macro: string) => {
+		const macroBlock = `\n\n\`\`\`ffxiv-macro\n${macro}\n\`\`\`\n`;
+		setBody((prev) => prev + macroBlock);
+		setRichEditorKey((prev) => prev + 1);
+	}, []);
+
+	const insertMacroMd = useCallback(() => {
+		if (macroTextMd.trim()) {
+			handleInsertMacro(macroTextMd.trim());
+		}
+		setMacroTextMd('');
+		setShowMacroDialogMd(false);
+	}, [macroTextMd, handleInsertMacro]);
+
+	const cancelMacroMd = useCallback(() => {
+		setMacroTextMd('');
+		setShowMacroDialogMd(false);
 	}, []);
 
 	const handleEditorModeChange = useCallback(
@@ -197,7 +221,12 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 
 				{editorMode === 'visual' ? (
 					<>
-						<RichTextEditor key={richEditorKey} content={body} onChange={setBody} />
+						<RichTextEditor
+							key={richEditorKey}
+							content={body}
+							onChange={setBody}
+							onInsertMacro={handleInsertMacro}
+						/>
 						{errors.body && <p className="text-sm text-destructive mt-1">{errors.body[0]}</p>}
 						<p className="text-xs text-muted-foreground text-right mt-1">
 							{body.length.toLocaleString()}/50,000
@@ -268,8 +297,60 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				散開図
 			</Button>
 
-			{/* Image uploader (Markdown mode only) */}
-			{editorMode === 'markdown' && <ImageUploader onInsert={handleImageInsert} />}
+			{/* Image uploader & Macro insert (Markdown mode only) */}
+			{editorMode === 'markdown' && (
+				<div className="space-y-3">
+					<div className="flex gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={() => setShowMacroDialogMd(true)}
+						>
+							<Gamepad2 className="h-4 w-4 mr-1" />
+							マクロ挿入
+						</Button>
+					</div>
+					<ImageUploader onInsert={handleImageInsert} />
+				</div>
+			)}
+
+			{showMacroDialogMd && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+					<div className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-lg">
+						<h3 className="text-lg font-semibold mb-4">FF14マクロを挿入</h3>
+						<div className="space-y-3">
+							<textarea
+								value={macroTextMd}
+								onChange={(e) => {
+									const lines = e.target.value.split('\n');
+									if (lines.length <= 15) {
+										setMacroTextMd(e.target.value);
+									}
+								}}
+								placeholder={'/ac アクション名 <wait.3>\n/p メッセージ <se.1>'}
+								className="w-full h-48 rounded-md border border-input bg-[#1a1a2e] px-3 py-2 text-sm font-mono text-[#c8d0d8] placeholder:text-[#4a5568] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none resize-none"
+								// biome-ignore lint/a11y/noAutofocus: Macro dialog textarea needs immediate focus
+								autoFocus
+							/>
+							<div className="flex items-center justify-between text-xs text-muted-foreground">
+								<span>各行が / で始まるマクロコマンドです</span>
+								<span className={macroLineCountMd > 15 ? 'text-destructive' : ''}>
+									{macroLineCountMd}/15行
+								</span>
+							</div>
+						</div>
+						<div className="flex justify-end gap-2 mt-4">
+							<Button type="button" variant="outline" onClick={cancelMacroMd}>
+								キャンセル
+							</Button>
+							<Button type="button" onClick={insertMacroMd} disabled={!macroTextMd.trim()}>
+								挿入
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Submit buttons */}
 			<div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-border">
