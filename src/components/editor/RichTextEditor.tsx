@@ -41,7 +41,14 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
 		},
 	});
 
-	if (!editor) return null;
+	if (!editor) {
+		return (
+			<div className="flex flex-col">
+				<div className="h-9 rounded-t-md border border-b-0 border-input bg-secondary/50" />
+				<div className="h-[500px] rounded-b-md border border-input dark:bg-input/30" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex flex-col">

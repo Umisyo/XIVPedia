@@ -33,7 +33,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 	}, [editor]);
 
 	const applyLink = useCallback(() => {
-		if (linkUrl) {
+		if (linkUrl && /^(https?:\/\/|mailto:)/i.test(linkUrl)) {
 			editor.chain().focus().setLink({ href: linkUrl }).run();
 		}
 		setLinkUrl('');

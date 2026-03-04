@@ -256,8 +256,8 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				)}
 			</div>
 
-			{/* Image uploader */}
-			<ImageUploader onInsert={handleImageInsert} />
+			{/* Image uploader (Markdown mode only) */}
+			{editorMode === 'markdown' && <ImageUploader onInsert={handleImageInsert} />}
 
 			{/* Submit buttons */}
 			<div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-border">
