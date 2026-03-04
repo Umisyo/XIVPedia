@@ -7,13 +7,13 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	reporter: process.env.CI ? 'github' : 'html',
 	use: {
-		baseURL: 'http://localhost:4321',
+		baseURL: 'http://localhost:8788',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 	},
 	webServer: {
 		command: 'pnpm preview',
-		port: 4321,
+		port: 8788,
 		reuseExistingServer: !process.env.CI,
 	},
 });
