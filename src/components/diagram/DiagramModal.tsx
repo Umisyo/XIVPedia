@@ -81,7 +81,7 @@ export function DiagramModal({ isOpen, onClose, onInsert }: DiagramModalProps) {
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
 		>
 			<div className="relative w-full max-w-3xl mx-4 rounded-lg border border-border bg-background p-6 shadow-lg">
-				<h2 className="text-lg font-semibold mb-4">散開図エディタ</h2>
+				<h2 className="text-lg font-semibold mb-4 select-none">散開図エディタ</h2>
 
 				<DiagramEditor key={editorKey} initialData={data} onChange={setData} />
 

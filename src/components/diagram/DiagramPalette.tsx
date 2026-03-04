@@ -19,7 +19,7 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 		<div className="flex flex-col gap-4">
 			{/* ロールセクション */}
 			<div>
-				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">ロール</h3>
+				<h3 className="mb-2 text-sm font-semibold text-muted-foreground select-none">ロール</h3>
 				<div className="flex flex-wrap gap-2">
 					{ROLES.map((role) => {
 						const placed = existingMarkers.includes(role);
@@ -35,7 +35,7 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 									e.dataTransfer.setData('type', 'marker');
 									e.dataTransfer.setData('id', role);
 								}}
-								className="inline-flex h-8 w-10 items-center justify-center rounded-full text-xs font-bold text-white"
+								className="inline-flex h-8 w-10 items-center justify-center rounded-full text-xs font-bold text-white select-none"
 								style={{
 									backgroundColor: color,
 									opacity: placed ? 0.3 : 1,
@@ -51,7 +51,9 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 
 			{/* ウェイマークセクション */}
 			<div>
-				<h3 className="mb-2 text-sm font-semibold text-muted-foreground">ウェイマーク</h3>
+				<h3 className="mb-2 text-sm font-semibold text-muted-foreground select-none">
+					ウェイマーク
+				</h3>
 				<div className="flex flex-wrap gap-2">
 					{WAYMARK_LABELS.map((label) => {
 						const placed = existingWaymarks.includes(label);
@@ -68,7 +70,7 @@ export function DiagramPalette({ existingMarkers, existingWaymarks }: DiagramPal
 									e.dataTransfer.setData('type', 'waymark');
 									e.dataTransfer.setData('id', label);
 								}}
-								className={`inline-flex h-8 w-8 items-center justify-center text-xs font-bold text-white ${
+								className={`inline-flex h-8 w-8 items-center justify-center text-xs font-bold text-white select-none ${
 									isNumber ? 'rounded-sm' : 'rounded-full'
 								}`}
 								style={{
