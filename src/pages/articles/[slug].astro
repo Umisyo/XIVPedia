@@ -39,14 +39,27 @@ if (currentUser) {
 		.limit(1);
 	reacted = !!userReaction;
 }
+
+const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.role === 'admin';
 ---
 
 <Layout title={article.title} description={description}>
 	<article class="py-8 max-w-3xl mx-auto">
 		<header class="mb-8">
-			<h1 class="text-3xl font-bold text-foreground sm:text-4xl leading-tight">
-				{article.title}
-			</h1>
+			<div class="flex items-start justify-between gap-4">
+				<h1 class="text-3xl font-bold text-foreground sm:text-4xl leading-tight">
+					{article.title}
+				</h1>
+				{canEdit && (
+					<a
+						href={`/articles/${article.slug}/edit`}
+						class="inline-flex items-center gap-1.5 shrink-0 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+						編集
+					</a>
+				)}
+			</div>
 
 			<div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
 				<div class="flex items-center gap-2">
