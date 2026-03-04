@@ -9,6 +9,8 @@ export interface ListArticlesOptions {
 	tag?: string;
 	status?: 'draft' | 'published' | 'archived';
 	sort?: 'newest' | 'popular';
+	skipCount?: boolean;
+	excludeBody?: boolean;
 }
 
 export interface CreateArticleData {
@@ -119,7 +121,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		id: articles.id,
 		title: articles.title,
 		slug: articles.slug,
-		body: articles.body,
+		...(options.excludeBody ? {} : { body: articles.body }),
 		status: articles.status,
 		publishedAt: articles.publishedAt,
 		createdAt: articles.createdAt,
@@ -130,7 +132,11 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		authorAvatarUrl: profiles.avatarUrl,
 	};
 
-	const totalResult = await db.select({ total: count() }).from(articles).where(where);
+	let total = 0;
+	if (!options.skipCount) {
+		const totalResult = await db.select({ total: count() }).from(articles).where(where);
+		total = totalResult[0]?.total ?? 0;
+	}
 
 	const reactionCount = sql<number>`count(${reactions.userId})`.as('reaction_count');
 
@@ -138,7 +144,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		id: string;
 		title: string;
 		slug: string;
-		body: string;
+		body?: string;
 		status: string;
 		publishedAt: Date | null;
 		createdAt: Date;
@@ -180,7 +186,6 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 			.offset(offset);
 	}
 
-	const total = totalResult[0]?.total ?? 0;
 	const articleIds = rows.map((r) => r.id);
 	const tagsMap = await getTagsForArticles(db, articleIds);
 
@@ -188,7 +193,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		id: row.id,
 		title: row.title,
 		slug: row.slug,
-		body: row.body,
+		body: row.body ?? '',
 		status: row.status,
 		publishedAt: row.publishedAt,
 		createdAt: row.createdAt,

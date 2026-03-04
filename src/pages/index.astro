@@ -12,11 +12,18 @@ const categoryLabels: Record<string, string> = {
 	general: 'その他',
 };
 
-const [{ data: popularArticles }, { data: newestArticles }, allTags] = await Promise.all([
-	listArticles(Astro.locals.db, { limit: 6, sort: 'popular', status: 'published' }),
-	listArticles(Astro.locals.db, { limit: 6, sort: 'newest', status: 'published' }),
-	listTags(Astro.locals.db),
-]);
+const listOpts = { skipCount: true, excludeBody: true, status: 'published' as const };
+const { data: popularArticles } = await listArticles(Astro.locals.db, {
+	...listOpts,
+	limit: 6,
+	sort: 'popular',
+});
+const { data: newestArticles } = await listArticles(Astro.locals.db, {
+	...listOpts,
+	limit: 6,
+	sort: 'newest',
+});
+const allTags = await listTags(Astro.locals.db);
 
 const groupedTags = groupTagsByCategory(allTags);
 ---
