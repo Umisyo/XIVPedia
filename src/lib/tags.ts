@@ -4,9 +4,6 @@ import { tags } from '../db/schema';
 
 export type TagCategory = string;
 
-/** @deprecated Use listCategories() from categories.ts instead */
-export const TAG_CATEGORIES = ['duty', 'job', 'crafting', 'gathering', 'general'] as const;
-
 export interface TagInfo {
 	id: string;
 	name: string;
