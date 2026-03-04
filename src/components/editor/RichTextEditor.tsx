@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { useCallback } from 'react';
 import { Markdown } from 'tiptap-markdown';
 import { EditorToolbar } from './EditorToolbar';
+import { DiagramBlock } from './extensions/DiagramBlock';
 import { MacroCodeBlock } from './MacroCodeBlock';
 
 interface RichTextEditorProps {
@@ -21,6 +22,7 @@ export function RichTextEditor({ content, onChange, onInsertMacro }: RichTextEdi
 				codeBlock: false,
 			}),
 			MacroCodeBlock,
+			DiagramBlock,
 			Link.configure({
 				openOnClick: false,
 				HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
