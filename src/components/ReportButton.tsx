@@ -72,7 +72,7 @@ export default function ReportButton({ targetType, targetId, isLoggedIn }: Repor
 				if (res.status === 409) {
 					setErrorMessage('すでに通報済みです');
 				} else {
-					setErrorMessage(json?.error ?? '通報の送信に失敗しました');
+					setErrorMessage(json?.error?.message ?? '通報の送信に失敗しました');
 				}
 				return;
 			}
