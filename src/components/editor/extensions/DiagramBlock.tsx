@@ -1,18 +1,21 @@
 import CodeBlock from '@tiptap/extension-code-block';
 import type { NodeViewProps } from '@tiptap/react';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
-import { Trash2 } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { DiagramModal } from '@/components/diagram/DiagramModal';
 import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 
 function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 	const text = node.textContent;
+	const [editing, setEditing] = useState(false);
+
+	const diagramData = useMemo(() => parseDiagramJson(text) ?? undefined, [text]);
 
 	const svgHtml = useMemo(() => {
-		const data = parseDiagramJson(text);
-		if (!data) return null;
-		return renderDiagramSvg(data);
-	}, [text]);
+		if (!diagramData) return null;
+		return renderDiagramSvg(diagramData);
+	}, [diagramData]);
 
 	const handleDelete = useCallback(() => {
 		const pos = getPos();
@@ -27,6 +30,28 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 			})
 			.run();
 	}, [editor, getPos, node.nodeSize]);
+
+	const handleSave = useCallback(
+		(newJson: string) => {
+			const pos = getPos();
+			if (pos === undefined) return;
+			editor
+				.chain()
+				.command(({ tr, dispatch }) => {
+					if (dispatch) {
+						const newNode = editor.schema.nodes.diagramBlock.create(
+							{ language: 'diagram' },
+							newJson ? editor.schema.text(newJson) : undefined,
+						);
+						tr.replaceWith(pos, pos + node.nodeSize, newNode);
+					}
+					return true;
+				})
+				.run();
+			setEditing(false);
+		},
+		[editor, getPos, node.nodeSize],
+	);
 
 	if (!svgHtml) {
 		return (
@@ -59,20 +84,38 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 			>
 				<div className="diagram-preview-header">
 					<span className="diagram-preview-label">散開図</span>
-					<button
-						type="button"
-						className="diagram-preview-action-btn"
-						onClick={handleDelete}
-						title="削除"
-					>
-						<Trash2 size={12} />
-					</button>
+					<div className="diagram-preview-actions">
+						<button
+							type="button"
+							className="diagram-preview-action-btn"
+							onClick={() => setEditing(true)}
+							title="編集"
+						>
+							<Pencil size={12} />
+						</button>
+						<button
+							type="button"
+							className="diagram-preview-action-btn"
+							onClick={handleDelete}
+							title="削除"
+						>
+							<Trash2 size={12} />
+						</button>
+					</div>
 				</div>
 				<div className="diagram-preview-body">
 					{/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG is generated from validated DiagramData via parseDiagramJson + renderDiagramSvg; input is JSON-parsed and type-checked, not raw user HTML */}
 					<div className="diagram-container" dangerouslySetInnerHTML={{ __html: svgHtml }} />
 				</div>
 			</div>
+			{editing && (
+				<DiagramModal
+					isOpen={true}
+					initialData={diagramData}
+					onSave={handleSave}
+					onClose={() => setEditing(false)}
+				/>
+			)}
 		</NodeViewWrapper>
 	);
 }

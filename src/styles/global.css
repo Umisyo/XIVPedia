@@ -416,6 +416,11 @@
   letter-spacing: 0.05em;
 }
 
+.diagram-preview-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
 .diagram-preview-action-btn {
   display: inline-flex;
   align-items: center;
