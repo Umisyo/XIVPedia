@@ -2,6 +2,8 @@ import { defineMiddleware } from 'astro:middleware';
 import { eq } from 'drizzle-orm';
 import { createDb } from './db';
 import { profiles } from './db/schema';
+import { rateLimitError } from './lib/errors';
+import { buildRateLimitKey, checkRateLimit, getRateLimitConfig } from './lib/rate-limit';
 import { createSupabaseClient } from './lib/supabase';
 
 const ONBOARDING_SKIP_PATHS = ['/onboarding', '/api/', '/login', '/register'];
@@ -42,6 +44,36 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		}
 	} else {
 		context.locals.currentUser = null;
+	}
+
+	// Rate limiting for POST requests
+	const method = context.request.method;
+	const path = context.url.pathname;
+
+	if (method === 'POST') {
+		const config = getRateLimitConfig(method, path);
+		if (config) {
+			const ip =
+				context.request.headers.get('cf-connecting-ip') ??
+				context.request.headers.get('x-forwarded-for') ??
+				'unknown';
+			const userId = user?.id ?? '';
+			const identifier = userId ? `${ip}:${userId}` : ip;
+			const cacheKey = buildRateLimitKey(method, path, identifier);
+
+			const result = await checkRateLimit(cacheKey, config.limit);
+			const now = Math.floor(Date.now() / 1000);
+			const retryAfter = Math.max(0, result.resetAt - now);
+
+			if (!result.allowed) {
+				return rateLimitError(retryAfter);
+			}
+
+			const response = await next();
+			response.headers.set('X-RateLimit-Remaining', String(result.remaining));
+			response.headers.set('X-RateLimit-Reset', String(result.resetAt));
+			return response;
+		}
 	}
 
 	return next();

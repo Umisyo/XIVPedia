@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import ReportButton from '../ReportButton';
 
 interface Comment {
 	id: string;
@@ -178,6 +179,12 @@ export default function CommentSection({
 		return false;
 	}
 
+	function canReport(comment: Comment): boolean {
+		if (!currentUser) return false;
+		if (currentUser.id === comment.author.id) return false;
+		return true;
+	}
+
 	useEffect(() => {
 		loadInitialComments();
 	}, [loadInitialComments]);
@@ -224,15 +231,24 @@ export default function CommentSection({
 										{formatRelativeTime(comment.createdAt)}
 									</span>
 								</div>
-								{canDelete(comment) && (
-									<button
-										type="button"
-										onClick={() => handleDelete(comment.id)}
-										className="text-xs text-muted-foreground transition-colors hover:text-destructive"
-									>
-										削除
-									</button>
-								)}
+								<div className="flex items-center gap-2">
+									{canReport(comment) && (
+										<ReportButton
+											targetType="comment"
+											targetId={comment.id}
+											isLoggedIn={!!currentUser}
+										/>
+									)}
+									{canDelete(comment) && (
+										<button
+											type="button"
+											onClick={() => handleDelete(comment.id)}
+											className="text-xs text-muted-foreground transition-colors hover:text-destructive"
+										>
+											削除
+										</button>
+									)}
+								</div>
 							</div>
 							<p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
 						</div>

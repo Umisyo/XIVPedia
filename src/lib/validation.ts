@@ -20,6 +20,17 @@ export interface UpdateArticleInput {
 	status?: 'draft' | 'published';
 }
 
+export interface CreateReportInput {
+	reason: 'spam' | 'inappropriate' | 'misleading' | 'other';
+	description?: string;
+	targetType: 'article' | 'comment';
+	targetId: string;
+}
+
+export interface UpdateReportInput {
+	status: 'resolved' | 'dismissed';
+}
+
 export function validateCreateArticle(data: unknown): ValidationResult<CreateArticleInput> {
 	if (typeof data !== 'object' || data === null) {
 		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
@@ -173,6 +184,100 @@ export function validateCreateComment(data: unknown): ValidationResult<CreateCom
 		success: true,
 		data: {
 			body: obj.body as string,
+		},
+	};
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const REPORT_REASONS = ['spam', 'inappropriate', 'misleading', 'other'] as const;
+const TARGET_TYPES = ['article', 'comment'] as const;
+
+export function validateCreateReport(data: unknown): ValidationResult<CreateReportInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// reason
+	if (obj.reason === undefined || obj.reason === null) {
+		errors.reason = ['reason is required'];
+	} else if (typeof obj.reason !== 'string') {
+		errors.reason = ['reason must be a string'];
+	} else if (!(REPORT_REASONS as readonly string[]).includes(obj.reason)) {
+		errors.reason = ['reason must be one of: spam, inappropriate, misleading, other'];
+	}
+
+	// targetType
+	if (obj.targetType === undefined || obj.targetType === null) {
+		errors.targetType = ['targetType is required'];
+	} else if (typeof obj.targetType !== 'string') {
+		errors.targetType = ['targetType must be a string'];
+	} else if (!(TARGET_TYPES as readonly string[]).includes(obj.targetType)) {
+		errors.targetType = ['targetType must be one of: article, comment'];
+	}
+
+	// targetId
+	if (obj.targetId === undefined || obj.targetId === null) {
+		errors.targetId = ['targetId is required'];
+	} else if (typeof obj.targetId !== 'string') {
+		errors.targetId = ['targetId must be a string'];
+	} else if (!UUID_REGEX.test(obj.targetId)) {
+		errors.targetId = ['targetId must be a valid UUID'];
+	}
+
+	// description (optional)
+	if (obj.description !== undefined && obj.description !== null) {
+		if (typeof obj.description !== 'string') {
+			errors.description = ['description must be a string'];
+		} else if (obj.description.length > 1000) {
+			errors.description = ['description must be at most 1000 characters'];
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	return {
+		success: true,
+		data: {
+			reason: obj.reason as CreateReportInput['reason'],
+			targetType: obj.targetType as CreateReportInput['targetType'],
+			targetId: obj.targetId as string,
+			description: (obj.description as string) ?? undefined,
+		},
+	};
+}
+
+const REPORT_STATUSES = ['resolved', 'dismissed'] as const;
+
+export function validateUpdateReport(data: unknown): ValidationResult<UpdateReportInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// status
+	if (obj.status === undefined || obj.status === null) {
+		errors.status = ['status is required'];
+	} else if (typeof obj.status !== 'string') {
+		errors.status = ['status must be a string'];
+	} else if (!(REPORT_STATUSES as readonly string[]).includes(obj.status)) {
+		errors.status = ['status must be one of: resolved, dismissed'];
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	return {
+		success: true,
+		data: {
+			status: obj.status as UpdateReportInput['status'],
 		},
 	};
 }

@@ -82,3 +82,23 @@ export const reactions = pgTable(
 	},
 	(t) => [primaryKey({ columns: [t.articleId, t.userId] })],
 );
+
+// 通報
+export const reports = pgTable('reports', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	reason: text('reason', {
+		enum: ['spam', 'inappropriate', 'misleading', 'other'],
+	}).notNull(),
+	description: text('description'),
+	targetType: text('target_type', { enum: ['article', 'comment'] }).notNull(),
+	targetId: uuid('target_id').notNull(),
+	reporterId: uuid('reporter_id')
+		.references(() => profiles.id)
+		.notNull(),
+	status: text('status', { enum: ['pending', 'resolved', 'dismissed'] })
+		.default('pending')
+		.notNull(),
+	resolvedBy: uuid('resolved_by').references(() => profiles.id),
+	resolvedAt: timestamp('resolved_at'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+});

@@ -1,12 +1,28 @@
 ---
+import ReportButton from './ReportButton.tsx';
+
 interface Props {
 	html: string;
+	articleId?: string;
+	isLoggedIn?: boolean;
 }
 
-const { html } = Astro.props;
+const { html, articleId, isLoggedIn = false } = Astro.props;
 ---
 
-<div class="article-content" set:html={html} />
+<div class="article-content-wrapper">
+	{articleId && (
+		<div class="mb-4 flex justify-end">
+			<ReportButton
+				client:load
+				targetType="article"
+				targetId={articleId}
+				isLoggedIn={isLoggedIn}
+			/>
+		</div>
+	)}
+	<div class="article-content" set:html={html} />
+</div>
 
 <style>
 	.article-content {

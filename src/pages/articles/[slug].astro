@@ -96,7 +96,7 @@ const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.r
 			)}
 		</header>
 
-		<ArticleContent html={html} />
+		<ArticleContent html={html} articleId={article.id} isLoggedIn={!!currentUser} />
 
 		<div class="mt-8 flex justify-start">
 			<ReactionButton
