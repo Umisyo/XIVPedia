@@ -1,4 +1,10 @@
-type ErrorCode = 'VALIDATION_ERROR' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INTERNAL_ERROR';
+type ErrorCode =
+	| 'VALIDATION_ERROR'
+	| 'NOT_FOUND'
+	| 'UNAUTHORIZED'
+	| 'FORBIDDEN'
+	| 'INTERNAL_ERROR'
+	| 'RATE_LIMITED';
 
 interface ErrorBody {
 	error: {
@@ -36,4 +42,20 @@ export function unauthorized(message = 'Authentication required'): Response {
 
 export function forbidden(message = 'Permission denied'): Response {
 	return errorResponse(403, 'FORBIDDEN', message);
+}
+
+export function rateLimitError(retryAfter: number): Response {
+	const body: ErrorBody = {
+		error: {
+			code: 'RATE_LIMITED',
+			message: 'Too many requests. Please try again later.',
+		},
+	};
+	return new Response(JSON.stringify(body), {
+		status: 429,
+		headers: {
+			'Content-Type': 'application/json',
+			'Retry-After': String(retryAfter),
+		},
+	});
 }
