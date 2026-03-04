@@ -38,26 +38,23 @@ jobs:
       - name: Start local Supabase
         run: supabase start
 
-      - name: Set Supabase env vars
+      - name: Setup database and env
         run: |
-          supabase status -o env > /tmp/supabase-env
-          echo "DATABASE_URL=$(grep '^DB_URL=' /tmp/supabase-env | cut -d= -f2-)" >> $GITHUB_ENV
-          echo "SUPABASE_URL=$(grep '^API_URL=' /tmp/supabase-env | cut -d= -f2-)" >> $GITHUB_ENV
-          echo "SUPABASE_PUBLISHABLE_KEY=$(grep '^ANON_KEY=' /tmp/supabase-env | cut -d= -f2-)" >> $GITHUB_ENV
+          eval "$(supabase status -o env)"
 
-      - name: Apply migrations and seed
-        run: |
-          psql "$DATABASE_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
+          echo "SUPABASE_URL=$API_URL" >> $GITHUB_ENV
+          echo "SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> $GITHUB_ENV
+
+          psql "$DB_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
           for f in drizzle/0*.sql; do
-            psql "$DATABASE_URL" -f "$f" || true
+            psql "$DB_URL" -f "$f" || true
           done
-          pnpm exec tsx src/db/seed.ts
+          DATABASE_URL="$DB_URL" pnpm exec tsx src/db/seed.ts
 
-      - name: Create .dev.vars for wrangler
-        run: |
-          echo "DATABASE_URL=$DATABASE_URL" > .dev.vars
-          echo "SUPABASE_URL=$SUPABASE_URL" >> .dev.vars
-          echo "SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY" >> .dev.vars
+          echo "DATABASE_URL=$DB_URL" > .dev.vars
+          echo "SUPABASE_URL=$API_URL" >> .dev.vars
+          echo "SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> .dev.vars
 
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm build
