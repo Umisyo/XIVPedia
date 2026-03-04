@@ -29,7 +29,9 @@ export async function GET(context: APIContext): Promise<Response> {
 			? (rawSort as (typeof validSorts)[number])
 			: 'newest';
 
-	const result = await listArticles(db, { page, limit, tag, status, sort });
+	const patch = params.get('patch') ?? undefined;
+
+	const result = await listArticles(db, { page, limit, tag, patch, status, sort });
 
 	return new Response(JSON.stringify(result), {
 		status: 200,
@@ -51,7 +53,17 @@ export async function POST(context: APIContext): Promise<Response> {
 		return validationError(validation.errors);
 	}
 
-	const article = await createArticle(db, validation.data, currentUser.id);
+	const article = await createArticle(
+		db,
+		{
+			title: validation.data.title,
+			body: validation.data.body,
+			tags: validation.data.tags,
+			status: validation.data.status,
+			patch: validation.data.patch,
+		},
+		currentUser.id,
+	);
 
 	return new Response(JSON.stringify({ data: article }), {
 		status: 201,

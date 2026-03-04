@@ -35,6 +35,7 @@ export const articles = pgTable('articles', {
 	status: text('status', { enum: ['draft', 'published', 'archived'] })
 		.default('draft')
 		.notNull(),
+	patch: text('patch'),
 	publishedAt: timestamp('published_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),

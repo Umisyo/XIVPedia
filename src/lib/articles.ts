@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull, like, sql } from 'drizzle-orm';
 import type { Database } from '../db';
 import { articles, articleTags, profiles, reactions, tags } from '../db/schema';
 import { generateSlug } from './slug';
@@ -7,6 +7,7 @@ export interface ListArticlesOptions {
 	page?: number;
 	limit?: number;
 	tag?: string;
+	patch?: string;
 	status?: 'draft' | 'published' | 'archived';
 	sort?: 'newest' | 'popular';
 	skipCount?: boolean;
@@ -18,6 +19,7 @@ export interface CreateArticleData {
 	body: string;
 	tags?: string[];
 	status?: 'draft' | 'published';
+	patch?: string | null;
 }
 
 export interface UpdateArticleData {
@@ -25,6 +27,7 @@ export interface UpdateArticleData {
 	body?: string;
 	tags?: string[];
 	status?: 'draft' | 'published';
+	patch?: string | null;
 }
 
 interface AuthorInfo {
@@ -47,6 +50,7 @@ interface ArticleDetail {
 	slug: string;
 	body: string;
 	status: string;
+	patch: string | null;
 	publishedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
@@ -95,6 +99,17 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 
 	const conditions = [eq(articles.status, status)];
 
+	if (options.patch) {
+		if (options.patch === 'none') {
+			conditions.push(isNull(articles.patch));
+		} else if (/^\d+\.x$/.test(options.patch)) {
+			const major = options.patch.replace('.x', '.');
+			conditions.push(like(articles.patch, `${major}%`));
+		} else {
+			conditions.push(eq(articles.patch, options.patch));
+		}
+	}
+
 	if (options.tag) {
 		const tagRow = await db
 			.select({ id: tags.id })
@@ -123,6 +138,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		slug: articles.slug,
 		...(options.excludeBody ? {} : { body: articles.body }),
 		status: articles.status,
+		patch: articles.patch,
 		publishedAt: articles.publishedAt,
 		createdAt: articles.createdAt,
 		updatedAt: articles.updatedAt,
@@ -146,6 +162,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		slug: string;
 		body?: string;
 		status: string;
+		patch: string | null;
 		publishedAt: Date | null;
 		createdAt: Date;
 		updatedAt: Date;
@@ -195,6 +212,7 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		slug: row.slug,
 		body: row.body ?? '',
 		status: row.status,
+		patch: row.patch,
 		publishedAt: row.publishedAt,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
@@ -221,6 +239,7 @@ export async function getArticleBySlug(db: Database, slug: string): Promise<Arti
 			slug: articles.slug,
 			body: articles.body,
 			status: articles.status,
+			patch: articles.patch,
 			publishedAt: articles.publishedAt,
 			createdAt: articles.createdAt,
 			updatedAt: articles.updatedAt,
@@ -248,6 +267,7 @@ export async function getArticleBySlug(db: Database, slug: string): Promise<Arti
 		slug: row.slug,
 		body: row.body,
 		status: row.status,
+		patch: row.patch,
 		publishedAt: row.publishedAt,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
@@ -279,6 +299,7 @@ export async function createArticle(
 			body: data.body,
 			authorId,
 			status,
+			patch: data.patch ?? null,
 			publishedAt: status === 'published' ? now : null,
 		})
 		.returning({ id: articles.id, slug: articles.slug });
@@ -308,6 +329,7 @@ export async function updateArticle(
 	const updates: Record<string, unknown> = { updatedAt: new Date() };
 	if (data.title !== undefined) updates.title = data.title;
 	if (data.body !== undefined) updates.body = data.body;
+	if (data.patch !== undefined) updates.patch = data.patch;
 	if (data.status !== undefined) {
 		updates.status = data.status;
 		if (data.status === 'published' && existing[0].publishedAt === null) {

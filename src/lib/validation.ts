@@ -11,6 +11,7 @@ export interface CreateArticleInput {
 	body: string;
 	tags?: string[];
 	status?: 'draft' | 'published';
+	patch?: string | null;
 }
 
 export interface UpdateArticleInput {
@@ -18,6 +19,7 @@ export interface UpdateArticleInput {
 	body?: string;
 	tags?: string[];
 	status?: 'draft' | 'published';
+	patch?: string | null;
 }
 
 export interface CreateReportInput {
@@ -75,9 +77,20 @@ export function validateCreateArticle(data: unknown): ValidationResult<CreateArt
 		}
 	}
 
+	// patch (optional)
+	if (obj.patch !== undefined && obj.patch !== null && obj.patch !== '') {
+		if (typeof obj.patch !== 'string') {
+			errors.patch = ['patch must be a string'];
+		} else if (!/^\d+\.\d+$/.test(obj.patch)) {
+			errors.patch = ['patch must be in X.Y format (e.g. 7.0, 6.5)'];
+		}
+	}
+
 	if (Object.keys(errors).length > 0) {
 		return { success: false, errors };
 	}
+
+	const patchValue = obj.patch === '' || obj.patch === undefined ? undefined : (obj.patch as string | null);
 
 	return {
 		success: true,
@@ -86,6 +99,7 @@ export function validateCreateArticle(data: unknown): ValidationResult<CreateArt
 			body: obj.body as string,
 			tags: obj.tags as string[] | undefined,
 			status: (obj.status as 'draft' | 'published') ?? undefined,
+			patch: patchValue,
 		},
 	};
 }
@@ -102,8 +116,9 @@ export function validateUpdateArticle(data: unknown): ValidationResult<UpdateArt
 	const hasBody = obj.body !== undefined;
 	const hasTags = obj.tags !== undefined;
 	const hasStatus = obj.status !== undefined;
+	const hasPatch = 'patch' in obj;
 
-	if (!hasTitle && !hasBody && !hasTags && !hasStatus) {
+	if (!hasTitle && !hasBody && !hasTags && !hasStatus && !hasPatch) {
 		return {
 			success: false,
 			errors: { _: ['At least one field must be provided'] },
@@ -146,6 +161,15 @@ export function validateUpdateArticle(data: unknown): ValidationResult<UpdateArt
 		}
 	}
 
+	// patch (optional)
+	if (hasPatch && obj.patch !== null && obj.patch !== '') {
+		if (typeof obj.patch !== 'string') {
+			errors.patch = ['patch must be a string'];
+		} else if (!/^\d+\.\d+$/.test(obj.patch)) {
+			errors.patch = ['patch must be in X.Y format (e.g. 7.0, 6.5)'];
+		}
+	}
+
 	if (Object.keys(errors).length > 0) {
 		return { success: false, errors };
 	}
@@ -155,6 +179,7 @@ export function validateUpdateArticle(data: unknown): ValidationResult<UpdateArt
 	if (hasBody) result.body = obj.body as string;
 	if (hasTags) result.tags = obj.tags as string[];
 	if (hasStatus) result.status = obj.status as 'draft' | 'published';
+	if (hasPatch) result.patch = obj.patch === '' ? null : (obj.patch as string | null);
 
 	return { success: true, data: result };
 }

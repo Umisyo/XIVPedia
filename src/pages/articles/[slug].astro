@@ -94,8 +94,13 @@ const isAdmin = currentUser?.profile?.role === 'admin';
 				</time>
 			</div>
 
-			{article.tags.length > 0 && (
+			{(article.tags.length > 0 || article.patch) && (
 				<div class="mt-4 flex flex-wrap gap-2">
+					{article.patch && (
+						<span class="inline-block rounded-md bg-primary/10 text-primary px-2.5 py-1 text-xs font-medium">
+							Patch {article.patch}
+						</span>
+					)}
 					{article.tags.map((tag) => (
 						<span class="inline-block rounded-md bg-secondary px-2.5 py-1 text-xs text-muted-foreground">
 							{tag.name}

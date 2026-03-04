@@ -46,7 +46,13 @@ export async function PUT(context: APIContext): Promise<Response> {
 		return validationError(validation.errors);
 	}
 
-	const updated = await updateArticle(db, article.id, validation.data);
+	const updated = await updateArticle(db, article.id, {
+		title: validation.data.title,
+		body: validation.data.body,
+		tags: validation.data.tags,
+		status: validation.data.status,
+		patch: validation.data.patch,
+	});
 
 	return new Response(JSON.stringify({ data: updated }), {
 		status: 200,
