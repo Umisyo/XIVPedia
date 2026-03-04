@@ -23,6 +23,7 @@
 		"@supabase/ssr": "^0.9.0",
 		"@supabase/supabase-js": "^2.98.0",
 		"@tailwindcss/vite": "^4.2.1",
+		"@tiptap/extension-code-block": "^3.20.0",
 		"@tiptap/extension-link": "^3.20.0",
 		"@tiptap/extension-placeholder": "^3.20.0",
 		"@tiptap/pm": "^3.20.0",
