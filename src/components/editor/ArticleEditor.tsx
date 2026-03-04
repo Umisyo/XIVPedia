@@ -1,8 +1,9 @@
-import { Eye, Pen, Save, Send } from 'lucide-react';
+import { Eye, Grid2x2, Pen, Save, Send } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DiagramModal } from '@/components/diagram/DiagramModal';
 import type { TagInfo } from '@/lib/tags';
 import { ImageUploader } from './ImageUploader';
 import { MarkdownPreview } from './MarkdownPreview';
@@ -40,6 +41,11 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 	const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 	const [editorMode, setEditorMode] = useState<EditorMode>('visual');
 	const [richEditorKey, setRichEditorKey] = useState(0);
+	const [isDiagramOpen, setIsDiagramOpen] = useState(false);
+
+	const handleDiagramInsert = useCallback((codeFence: string) => {
+		setBody((prev) => `${prev}\n${codeFence}\n`);
+	}, []);
 
 	const handleImageInsert = useCallback((markdown: string) => {
 		setBody((prev) => `${prev}\n${markdown}\n`);
@@ -256,6 +262,16 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				)}
 			</div>
 
+			{/* Diagram button */}
+			<Button
+				type="button"
+				variant="outline"
+				onClick={() => setIsDiagramOpen(true)}
+			>
+				<Grid2x2 className="h-4 w-4" />
+				散開図
+			</Button>
+
 			{/* Image uploader (Markdown mode only) */}
 			{editorMode === 'markdown' && <ImageUploader onInsert={handleImageInsert} />}
 
@@ -275,6 +291,11 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 					公開する
 				</Button>
 			</div>
+			<DiagramModal
+				isOpen={isDiagramOpen}
+				onClose={() => setIsDiagramOpen(false)}
+				onInsert={handleDiagramInsert}
+			/>
 		</div>
 	);
 }

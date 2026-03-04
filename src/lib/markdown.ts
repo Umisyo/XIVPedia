@@ -1,3 +1,4 @@
+import { parseDiagramJson, renderDiagramSvg } from '@/components/diagram/renderDiagramSvg';
 import { Marked } from 'marked';
 import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
@@ -35,6 +36,12 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 
 	const renderer = {
 		code({ text, lang }: { text: string; lang?: string | undefined }) {
+			if (lang === 'diagram') {
+				const data = parseDiagramJson(text);
+				if (data) {
+					return `<div class="diagram-container">${renderDiagramSvg(data)}</div>`;
+				}
+			}
 			const language = lang || 'text';
 			try {
 				const loadedLangs: string[] = highlighter.getLoadedLanguages();
