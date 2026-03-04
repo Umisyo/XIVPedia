@@ -2,6 +2,10 @@ type ValidationSuccess<T> = { success: true; data: T };
 type ValidationFailure = { success: false; errors: Record<string, string[]> };
 type ValidationResult<T> = ValidationSuccess<T> | ValidationFailure;
 
+export interface CreateCommentInput {
+	body: string;
+}
+
 export interface CreateArticleInput {
 	title: string;
 	body: string;
@@ -142,4 +146,33 @@ export function validateUpdateArticle(data: unknown): ValidationResult<UpdateArt
 	if (hasStatus) result.status = obj.status as 'draft' | 'published';
 
 	return { success: true, data: result };
+}
+
+export function validateCreateComment(data: unknown): ValidationResult<CreateCommentInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// body
+	if (obj.body === undefined || obj.body === null) {
+		errors.body = ['body is required'];
+	} else if (typeof obj.body !== 'string') {
+		errors.body = ['body must be a string'];
+	} else if (obj.body.length < 1 || obj.body.length > 2000) {
+		errors.body = ['body must be between 1 and 2000 characters'];
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	return {
+		success: true,
+		data: {
+			body: obj.body as string,
+		},
+	};
 }
