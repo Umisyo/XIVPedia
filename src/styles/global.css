@@ -370,7 +370,7 @@
 	pointer-events: none;
 }
 
-/* Diagram (散会図) styles */
+/* Diagram (散開図) styles */
 .diagram-container {
 	max-width: 400px;
 	margin: 1.25rem auto;
@@ -379,6 +379,87 @@
 	width: 100%;
 	height: auto;
 	display: block;
+}
+
+/* Diagram preview in visual editor */
+.diagram-preview {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background-color: #1a1a2e;
+}
+
+.diagram-preview--selected {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.diagram-preview--error {
+  border-color: #d93f0b;
+}
+
+.diagram-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background-color: #16213e;
+  border-bottom: 1px solid #0f3460;
+}
+
+.diagram-preview-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e0c080;
+  letter-spacing: 0.05em;
+}
+
+.diagram-preview-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #0f3460;
+  background-color: #0f3460;
+  color: #a0b4d0;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.diagram-preview-action-btn:hover {
+  background-color: #1a4080;
+  color: #e0e0e0;
+}
+
+.diagram-preview-body {
+  padding: 1rem;
+}
+
+.diagram-preview-body .diagram-container {
+  margin: 0 auto;
+}
+
+.diagram-preview-raw {
+  margin: 0 !important;
+  padding: 0.75rem 1rem !important;
+  background-color: #1a1a2e !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.6 !important;
+  color: #c8d0d8;
+  overflow-x: auto;
+}
+
+.diagram-preview-raw code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  color: inherit;
 }
 
 /* FF14 Macro Block styles */

@@ -45,6 +45,7 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 
 	const handleDiagramInsert = useCallback((codeFence: string) => {
 		setBody((prev) => `${prev}\n${codeFence}\n`);
+		setRichEditorKey((prev) => prev + 1);
 	}, []);
 
 	const [showMacroDialogMd, setShowMacroDialogMd] = useState(false);
