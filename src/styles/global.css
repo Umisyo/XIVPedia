@@ -474,3 +474,28 @@
 .macro-text {
   color: #c8d0d8;  /* 通常テキスト: 薄いグレー */
 }
+
+/* Macro block action buttons (visual editor) */
+.ffxiv-macro-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.ffxiv-macro-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #0f3460;
+  background-color: #0f3460;
+  color: #a0b4d0;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.ffxiv-macro-action-btn:hover {
+  background-color: #1a4080;
+  color: #e0e0e0;
+}
