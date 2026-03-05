@@ -19,3 +19,48 @@ jobs:
       - run: pnpm biome check .
       - run: pnpm astro check
       - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Setup database and env
+        run: |
+          eval "$(supabase status -o env)"
+
+          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
+          echo "SUPABASE_URL=$API_URL" >> $GITHUB_ENV
+          echo "SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> $GITHUB_ENV
+
+          psql "$DB_URL" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+          for f in drizzle/0*.sql; do
+            psql "$DB_URL" -f "$f" || true
+          done
+          DATABASE_URL="$DB_URL" pnpm exec tsx src/db/seed.ts
+
+          echo "DATABASE_URL=$DB_URL" > .dev.vars
+          echo "SUPABASE_URL=$API_URL" >> .dev.vars
+          echo "SUPABASE_PUBLISHABLE_KEY=$ANON_KEY" >> .dev.vars
+
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - run: pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
