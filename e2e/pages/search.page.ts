@@ -19,9 +19,9 @@ export class SearchPage {
 		return this.page.getByRole('heading', { name: '検索' });
 	}
 
-	/** 検索入力フィールド */
+	/** 検索入力フィールド（検索ページ本文内のもの） */
 	get searchInput(): Locator {
-		return this.page.locator('#search-input');
+		return this.page.locator('main #search-input');
 	}
 
 	/** 検索フォーム */

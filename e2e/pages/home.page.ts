@@ -30,9 +30,9 @@ export class HomePage {
 		return this.page.locator('header nav a[href="/tags"]');
 	}
 
-	/** 検索入力フィールド */
+	/** ヘッダー内の検索入力フィールド */
 	get searchInput(): Locator {
-		return this.page.locator('#search-input');
+		return this.page.locator('header #search-input');
 	}
 
 	/** ログインボタン（未認証時のヘッダー） */

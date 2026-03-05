@@ -1,5 +1,5 @@
 import { createDb } from './index';
-import { tags } from './schema';
+import { tagCategories, tags } from './schema';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
@@ -7,6 +7,18 @@ if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
 const db = createDb(DATABASE_URL);
 
 async function seed() {
+	console.log('Seeding tag categories...');
+	await db
+		.insert(tagCategories)
+		.values([
+			{ name: 'コンテンツ', slug: 'duty', displayOrder: 0 },
+			{ name: 'ジョブ', slug: 'job', displayOrder: 1 },
+			{ name: 'クラフト', slug: 'crafting', displayOrder: 2 },
+			{ name: '採集', slug: 'gathering', displayOrder: 3 },
+			{ name: '全般', slug: 'general', displayOrder: 4 },
+		])
+		.onConflictDoNothing();
+
 	console.log('Seeding tags...');
 	await db
 		.insert(tags)
