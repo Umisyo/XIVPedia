@@ -17,7 +17,7 @@ test.describe('認証フロー', () => {
 	test('ログインページに Google ログインボタンが表示される', async ({ page }) => {
 		await page.goto('/login');
 		// ログインページの見出し
-		await expect(page.getByText('ログイン', { exact: false })).toBeVisible();
+		await expect(page.locator('main').getByText('ログイン', { exact: true })).toBeVisible();
 		// Google でログインボタン
 		const googleButton = page.getByRole('button', { name: /Google でログイン/ });
 		await expect(googleButton).toBeVisible();
