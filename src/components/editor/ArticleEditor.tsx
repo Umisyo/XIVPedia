@@ -269,6 +269,7 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 									value={body}
 									onChange={(e) => setBody(e.target.value)}
 									placeholder="Markdown で記事を書く..."
+									aria-label="記事本文（Markdown）"
 									className="h-[500px] w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none font-mono dark:bg-input/30"
 									aria-invalid={!!errors.body}
 								/>
@@ -321,9 +322,19 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 			)}
 
 			{showMacroDialogMd && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-labelledby="macro-dialog-md-title"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onKeyDown={(e) => {
+						if (e.key === 'Escape') cancelMacroMd();
+					}}
+				>
 					<div className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-lg">
-						<h3 className="text-lg font-semibold mb-4">FF14マクロを挿入</h3>
+						<h3 id="macro-dialog-md-title" className="text-lg font-semibold mb-4">
+							FF14マクロを挿入
+						</h3>
 						<div className="space-y-3">
 							<textarea
 								value={macroTextMd}

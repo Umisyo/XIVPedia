@@ -1,5 +1,5 @@
 import { LogOut, Menu, Search, Settings, Shield, Tag, User, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
 	user: { displayName: string; avatarUrl?: string; role?: string } | null;
@@ -8,6 +8,16 @@ interface Props {
 export default function MobileNav({ user }: Props) {
 	const [isOpen, setIsOpen] = useState(false);
 
+	useEffect(() => {
+		function handleKeyDown(e: KeyboardEvent) {
+			if (e.key === 'Escape' && isOpen) {
+				setIsOpen(false);
+			}
+		}
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	}, [isOpen]);
+
 	return (
 		<div className="md:hidden">
 			<button
@@ -15,6 +25,7 @@ export default function MobileNav({ user }: Props) {
 				onClick={() => setIsOpen(!isOpen)}
 				className="text-foreground p-2 hover:text-primary transition-colors"
 				aria-label={isOpen ? 'メニューを閉じる' : 'メニューを開く'}
+				aria-expanded={isOpen}
 			>
 				{isOpen ? <X size={24} /> : <Menu size={24} />}
 			</button>

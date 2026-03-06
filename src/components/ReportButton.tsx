@@ -113,7 +113,7 @@ export default function ReportButton({ targetType, targetId, isLoggedIn }: Repor
 				>
 					<div className="mx-4 w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
 						<div className="flex items-center justify-between">
-							<h3 className="text-lg font-bold text-foreground">
+							<h3 id="report-dialog-title" className="text-lg font-bold text-foreground">
 								{targetType === 'article' ? '記事' : 'コメント'}を通報
 							</h3>
 							<button

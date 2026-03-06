@@ -21,11 +21,23 @@ export default function UserMenu({ displayName, avatarUrl, role }: Props) {
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, []);
 
+	useEffect(() => {
+		function handleKeyDown(e: KeyboardEvent) {
+			if (e.key === 'Escape' && isOpen) {
+				setIsOpen(false);
+			}
+		}
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	}, [isOpen]);
+
 	return (
 		<div ref={menuRef} className="relative">
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
+				aria-expanded={isOpen}
+				aria-haspopup="true"
 				className="flex items-center gap-2 text-foreground text-sm hover:text-primary transition-colors"
 			>
 				{avatarUrl ? (

@@ -196,7 +196,10 @@ export default function CommentSection({
 			<h2 className="text-lg font-bold text-foreground">コメント ({total}件)</h2>
 
 			{error && (
-				<div className="mt-4 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+				<div
+					role="alert"
+					className="mt-4 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+				>
 					{error}
 				</div>
 			)}
@@ -278,6 +281,7 @@ export default function CommentSection({
 							value={body}
 							onChange={(e) => setBody(e.target.value)}
 							placeholder="コメントを入力..."
+							aria-label="コメント"
 							rows={3}
 							className="w-full resize-none rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
 						/>
