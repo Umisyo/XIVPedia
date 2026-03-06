@@ -1,6 +1,6 @@
 import type { APIContext } from 'astro';
 import { listCategorySlugs } from '../../../../lib/categories';
-import { forbidden, unauthorized, validationError } from '../../../../lib/errors';
+import { errorResponse, forbidden, unauthorized, validationError } from '../../../../lib/errors';
 import { createTag, generateTagSlug, listTags } from '../../../../lib/tags';
 import { validateCreateTag } from '../../../../lib/validation';
 
@@ -72,6 +72,7 @@ export async function POST(context: APIContext): Promise<Response> {
 		if (err instanceof Error && err.message.includes('unique')) {
 			return validationError({ name: ['同じ名前またはスラグのタグが既に存在します'] });
 		}
-		throw err;
+		console.error('Failed to create tag:', err);
+		return errorResponse(500, 'INTERNAL_ERROR', 'An internal error occurred');
 	}
 }
