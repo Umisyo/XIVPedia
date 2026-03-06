@@ -6,7 +6,7 @@ test.describe('ナビゲーション', () => {
 		const homePage = new HomePage(page);
 		await homePage.goto();
 
-		// ヒーローセクションの見出しが表示される
+		// ヒーローセクションのロゴが表示される
 		await expect(homePage.heroHeading).toBeVisible();
 		// 「人気の記事」セクションが存在する
 		await expect(homePage.popularSectionHeading).toBeVisible();

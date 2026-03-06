@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="ページが見つかりません" description="お探しのページは見つかりませんでした">
+	<section class="py-20 text-center flex flex-col items-center justify-center min-h-[60vh]">
+		<p class="text-8xl font-bold text-muted-foreground/30 select-none">404</p>
+		<h1 class="mt-6 text-3xl font-bold text-foreground sm:text-4xl">
+			ページが見つかりません
+		</h1>
+		<p class="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
+			お探しのページは移動または削除された可能性があります。<br />
+			URLが正しいかご確認ください。
+		</p>
+		<a
+			href="/"
+			class="mt-8 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+		>
+			トップページへ戻る
+		</a>
+	</section>
+</Layout>

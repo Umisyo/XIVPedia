@@ -57,9 +57,9 @@ export class HomePage {
 
 	// --- トップページコンテンツ ---
 
-	/** ヒーローセクションの見出し */
+	/** ヒーローセクションのロゴ画像 */
 	get heroHeading(): Locator {
-		return this.page.locator('h1');
+		return this.page.locator('section img[alt="XIVPedia"]');
 	}
 
 	/** 「人気の記事」セクション見出し */
