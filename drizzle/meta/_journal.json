@@ -40,8 +40,15 @@
 		{
 			"idx": 8,
 			"version": "7",
+			"when": 1772781508397,
+			"tag": "0008_bookmarks",
+			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
 			"when": 1772938800000,
-			"tag": "0008_add_trgm_indexes",
+			"tag": "0009_add_trgm_indexes",
 			"breakpoints": true
 		}
 	]

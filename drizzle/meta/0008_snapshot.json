@@ -1,5 +1,5 @@
 {
-	"id": "e51a9b3c-c33c-4c3a-9852-c4be0779ec99",
+	"id": "e1884ba2-1894-4823-856b-fab744a76220",
 	"prevId": "85665865-7dbe-4256-a40d-122b1e2334e6",
 	"version": "7",
 	"dialect": "postgresql",
@@ -146,6 +146,62 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
+		"public.bookmarks": {
+			"name": "bookmarks",
+			"schema": "",
+			"columns": {
+				"user_id": {
+					"name": "user_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"article_id": {
+					"name": "article_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"bookmarks_user_id_profiles_id_fk": {
+					"name": "bookmarks_user_id_profiles_id_fk",
+					"tableFrom": "bookmarks",
+					"tableTo": "profiles",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"bookmarks_article_id_articles_id_fk": {
+					"name": "bookmarks_article_id_articles_id_fk",
+					"tableFrom": "bookmarks",
+					"tableTo": "articles",
+					"columnsFrom": ["article_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"bookmarks_user_id_article_id_pk": {
+					"name": "bookmarks_user_id_article_id_pk",
+					"columns": ["user_id", "article_id"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
 		"public.comments": {
 			"name": "comments",
 			"schema": "",
@@ -208,74 +264,6 @@
 					"columnsFrom": ["author_id"],
 					"columnsTo": ["id"],
 					"onDelete": "no action",
-					"onUpdate": "no action"
-				}
-			},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.notifications": {
-			"name": "notifications",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "uuid",
-					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
-				},
-				"user_id": {
-					"name": "user_id",
-					"type": "uuid",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"type": {
-					"name": "type",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"message": {
-					"name": "message",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				},
-				"link": {
-					"name": "link",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"is_read": {
-					"name": "is_read",
-					"type": "boolean",
-					"primaryKey": false,
-					"notNull": true,
-					"default": false
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {
-				"notifications_user_id_profiles_id_fk": {
-					"name": "notifications_user_id_profiles_id_fk",
-					"tableFrom": "notifications",
-					"tableTo": "profiles",
-					"columnsFrom": ["user_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
 					"onUpdate": "no action"
 				}
 			},
