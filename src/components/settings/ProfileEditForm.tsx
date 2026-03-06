@@ -177,6 +177,7 @@ export function ProfileEditForm({ currentDisplayName, currentAvatarUrl }: Profil
 									type="button"
 									onClick={handleAvatarClick}
 									disabled={isUploading}
+									aria-label="アバターを変更"
 									className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-muted bg-muted hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 								>
 									{avatarPreview ? (
@@ -222,6 +223,7 @@ export function ProfileEditForm({ currentDisplayName, currentAvatarUrl }: Profil
 								accept="image/png,image/jpeg,image/webp,image/gif"
 								className="hidden"
 								onChange={handleFileChange}
+								aria-label="アバター画像を選択"
 							/>
 						</div>
 

@@ -62,7 +62,7 @@ export default function TagRequestList() {
 		return (
 			<div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
 				{error}
-				<button type="button" onClick={fetchRequests} className="ml-2 underline hover:no-underline">
+				<button type="button" onClick={fetchRequests} className="ml-2 underline hover:no-underline focus:border-ring focus:ring-1 focus:ring-ring rounded">
 					再読み込み
 				</button>
 			</div>

@@ -142,6 +142,7 @@ export function ImageUploader({ onInsert }: ImageUploaderProps) {
 				accept="image/png,image/jpeg,image/webp,image/gif"
 				onChange={handleFileChange}
 				className="hidden"
+				aria-label="画像ファイルを選択"
 			/>
 		</div>
 	);

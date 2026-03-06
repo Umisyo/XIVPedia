@@ -144,6 +144,7 @@ export function OnboardingForm({
 										size="sm"
 										disabled={uploading}
 										onClick={() => fileInputRef.current?.click()}
+									aria-label="アバターを変更"
 									>
 										<Camera size={16} className="mr-1" />
 										{uploading ? 'アップロード中...' : '画像を変更'}
@@ -154,6 +155,7 @@ export function OnboardingForm({
 										accept="image/png,image/jpeg,image/webp,image/gif"
 										className="hidden"
 										onChange={handleFileSelect}
+										aria-label="アバター画像を選択"
 									/>
 								</div>
 							</div>
@@ -172,7 +174,8 @@ export function OnboardingForm({
 								onChange={(e) => setUsername(e.target.value)}
 							/>
 							<p className="text-xs text-muted-foreground">英数字とアンダースコアのみ、3〜20文字</p>
-							{usernameStatus === 'checking' && (
+							<div aria-live="polite">
+								{usernameStatus === 'checking' && (
 								<p className="text-xs text-muted-foreground">確認中...</p>
 							)}
 							{usernameStatus === 'available' && (
@@ -186,6 +189,7 @@ export function OnboardingForm({
 									英数字とアンダースコアのみ、3〜20文字で入力してください
 								</p>
 							)}
+							</div>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="displayName">表示名</Label>

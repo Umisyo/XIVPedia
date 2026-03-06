@@ -87,7 +87,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 					onChange={(e) => setName(e.target.value)}
 					placeholder="例: 極ナイツ・オブ・ラウンド"
 					maxLength={50}
-					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
 				/>
 				{errors.name && <p className="text-xs text-destructive">{errors.name[0]}</p>}
 			</div>
@@ -100,7 +100,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 					id="tag-category"
 					value={category}
 					onChange={(e) => setCategory(e.target.value)}
-					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
 				>
 					{categories.map((cat) => (
 						<option key={cat.slug} value={cat.slug}>
@@ -122,7 +122,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 					placeholder="このタグが必要な理由や用途を記入してください"
 					maxLength={500}
 					rows={3}
-					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none"
+					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:border-ring focus:ring-1 focus:ring-ring"
 				/>
 				<p className="text-xs text-muted-foreground">{description.length}/500</p>
 				{errors.description && <p className="text-xs text-destructive">{errors.description[0]}</p>}

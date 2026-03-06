@@ -215,9 +215,9 @@ export function EditorToolbar({ editor, onInsertMacro, onOpenDiagram }: EditorTo
 			)}
 
 			{showMacroDialog && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+				<div role="dialog" aria-modal="true" aria-labelledby="macro-dialog-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onKeyDown={(e) => { if (e.key === 'Escape') cancelMacro(); }}>
 					<div className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-lg">
-						<h3 className="text-lg font-semibold mb-4">FF14マクロを挿入</h3>
+						<h3 id="macro-dialog-title" className="text-lg font-semibold mb-4">FF14マクロを挿入</h3>
 						<div className="space-y-3">
 							<textarea
 								value={macroText}
@@ -273,6 +273,7 @@ function ToolbarButton({
 				type="button"
 				onClick={onClick}
 				disabled={disabled}
+				aria-label={tooltip}
 				className={`inline-flex items-center justify-center rounded p-1.5 text-sm transition-colors disabled:opacity-40 ${
 					active
 						? 'bg-secondary text-foreground'
