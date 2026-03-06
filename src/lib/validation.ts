@@ -536,6 +536,7 @@ export interface CreateTagRequestInput {
 
 export interface ReviewTagRequestInput {
 	status: 'approved' | 'rejected';
+	slug?: string;
 	rejectionReason?: string;
 }
 
@@ -607,6 +608,17 @@ export function validateReviewTagRequest(data: unknown): ValidationResult<Review
 		errors.status = ['status must be one of: approved, rejected'];
 	}
 
+	// slug (optional, only for approved)
+	if (obj.slug !== undefined && obj.slug !== null && obj.slug !== '') {
+		if (typeof obj.slug !== 'string') {
+			errors.slug = ['slug must be a string'];
+		} else if (obj.slug.length > 100) {
+			errors.slug = ['slug must be at most 100 characters'];
+		} else if (!SLUG_REGEX.test(obj.slug)) {
+			errors.slug = ['slugは小文字英数字・ハイフン・日本語のみ使用できます'];
+		}
+	}
+
 	// rejectionReason (optional, required when rejected)
 	if (obj.status === 'rejected') {
 		if (obj.rejectionReason === undefined || obj.rejectionReason === null) {
@@ -625,6 +637,9 @@ export function validateReviewTagRequest(data: unknown): ValidationResult<Review
 	const result: ReviewTagRequestInput = {
 		status: obj.status as ReviewTagRequestInput['status'],
 	};
+	if (typeof obj.slug === 'string' && obj.slug.trim()) {
+		result.slug = obj.slug.trim();
+	}
 	if (typeof obj.rejectionReason === 'string' && obj.rejectionReason.trim()) {
 		result.rejectionReason = (obj.rejectionReason as string).trim();
 	}

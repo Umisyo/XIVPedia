@@ -41,6 +41,10 @@ export default function TagRequestManagement() {
 	const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 	const [statusFilter, setStatusFilter] = useState<string>('pending');
 
+	// 承認フォーム
+	const [approvingId, setApprovingId] = useState<string | null>(null);
+	const [approveSlug, setApproveSlug] = useState('');
+
 	// 却下理由入力
 	const [rejectingId, setRejectingId] = useState<string | null>(null);
 	const [rejectionReason, setRejectionReason] = useState('');
@@ -82,10 +86,13 @@ export default function TagRequestManagement() {
 	async function handleApprove(id: string) {
 		setIsProcessing(true);
 		try {
+			const payload: Record<string, string> = { status: 'approved' };
+			if (approveSlug.trim()) payload.slug = approveSlug.trim();
+
 			const res = await fetch(`/api/admin/tag-requests/${id}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ status: 'approved' }),
+				body: JSON.stringify(payload),
 			});
 			if (!res.ok) {
 				const json = await res.json().catch(() => null);
@@ -94,6 +101,8 @@ export default function TagRequestManagement() {
 				);
 			}
 			setRequests((prev) => prev.filter((r) => r.id !== id));
+			setApprovingId(null);
+			setApproveSlug('');
 			setToast({ message: 'タグ申請を承認し、タグを作成しました', type: 'success' });
 		} catch (err) {
 			setToast({
@@ -222,30 +231,82 @@ export default function TagRequestManagement() {
 											</p>
 										</div>
 
-										{req.status === 'pending' && (
-											<div className="flex gap-1 shrink-0">
+										{req.status === 'pending' &&
+											approvingId !== req.id &&
+											rejectingId !== req.id && (
+												<div className="flex gap-1 shrink-0">
+													<button
+														type="button"
+														onClick={() => {
+															setApprovingId(req.id);
+															setApproveSlug('');
+															setRejectingId(null);
+														}}
+														disabled={isProcessing}
+														className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+													>
+														承認
+													</button>
+													<button
+														type="button"
+														onClick={() => {
+															setRejectingId(req.id);
+															setRejectionReason('');
+															setApprovingId(null);
+														}}
+														disabled={isProcessing}
+														className="rounded-md border border-destructive/50 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+													>
+														却下
+													</button>
+												</div>
+											)}
+									</div>
+
+									{approvingId === req.id && (
+										<div className="rounded-md border border-green-500/30 bg-green-500/5 p-3 space-y-2">
+											<div>
+												<label
+													htmlFor={`approve-slug-${req.id}`}
+													className="block text-xs font-medium text-foreground mb-1"
+												>
+													スラグ
+													<span className="ml-1 text-xs font-normal text-muted-foreground">
+														(空欄でタグ名から自動生成)
+													</span>
+												</label>
+												<input
+													id={`approve-slug-${req.id}`}
+													type="text"
+													value={approveSlug}
+													onChange={(e) => setApproveSlug(e.target.value)}
+													placeholder="例: arcadion-zero"
+													className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground"
+												/>
+											</div>
+											<div className="flex gap-2">
 												<button
 													type="button"
 													onClick={() => handleApprove(req.id)}
 													disabled={isProcessing}
-													className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+													className="rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
 												>
-													承認
+													{isProcessing ? '処理中...' : '承認する'}
 												</button>
 												<button
 													type="button"
 													onClick={() => {
-														setRejectingId(req.id);
-														setRejectionReason('');
+														setApprovingId(null);
+														setApproveSlug('');
 													}}
 													disabled={isProcessing}
-													className="rounded-md border border-destructive/50 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+													className="rounded-md border border-border px-3 py-1 text-xs text-foreground hover:bg-muted transition-colors"
 												>
-													却下
+													キャンセル
 												</button>
 											</div>
-										)}
-									</div>
+										</div>
+									)}
 
 									{req.status === 'rejected' && req.rejectionReason && (
 										<div className="rounded-md bg-destructive/5 px-3 py-2 text-xs text-destructive">
