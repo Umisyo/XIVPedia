@@ -93,7 +93,7 @@ const jsonLd = {
 							</a>
 						)}
 						{isAdmin && (
-							<ArticleDeleteButton client:load slug={article.slug} />
+							<ArticleDeleteButton client:idle slug={article.slug} />
 						)}
 					</div>
 				)}
@@ -145,7 +145,7 @@ const jsonLd = {
 
 		<div class="mt-8 flex justify-start">
 			<ReactionButton
-				client:load
+				client:visible
 				slug={article.slug}
 				initialCount={reactionCount}
 				initialReacted={reacted}
@@ -154,7 +154,7 @@ const jsonLd = {
 		</div>
 
 		<CommentSection
-			client:load
+			client:visible
 			slug={article.slug}
 			articleAuthorId={article.author.id}
 			currentUser={currentUser ? {
