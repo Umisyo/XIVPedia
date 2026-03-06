@@ -39,12 +39,14 @@ export const POST: APIRoute = async (context) => {
 		return context.redirect('/onboarding?error=username_taken');
 	}
 
+	const TRUSTED_AVATAR_DOMAINS = ['lh3.googleusercontent.com', 'avatars.githubusercontent.com'];
+
 	const rawAvatarUrl = formData.get('avatarUrl')?.toString()?.trim() || null;
 	let customAvatarUrl: string | null = null;
 	if (rawAvatarUrl) {
 		try {
 			const parsed = new URL(rawAvatarUrl);
-			if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+			if (parsed.protocol === 'https:' && TRUSTED_AVATAR_DOMAINS.includes(parsed.hostname)) {
 				customAvatarUrl = rawAvatarUrl;
 			}
 		} catch {
