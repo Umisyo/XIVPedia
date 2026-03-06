@@ -29,7 +29,7 @@ const categories = await listCategories(Astro.locals.db);
 
 		<div>
 			<h2 class="text-lg font-bold text-foreground mb-4">申請履歴</h2>
-			<TagRequestList client:load />
+			<TagRequestList client:idle />
 		</div>
 	</div>
 </Layout>

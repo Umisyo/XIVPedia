@@ -15,6 +15,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		return next();
 	}
 
+	const pathname = context.url.pathname;
+
+	// 静的アセットは認証・DB不要
+	if (
+		pathname.startsWith('/_astro/') ||
+		/\.(ico|png|svg|jpg|jpeg|webp|gif|css|js|woff2?|ttf|eot)$/.test(pathname)
+	) {
+		return next();
+	}
+
 	const env = context.locals.runtime.env;
 	context.locals.db = createDb(env.DATABASE_URL);
 	context.locals.supabase = createSupabaseClient(

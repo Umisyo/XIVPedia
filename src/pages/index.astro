@@ -38,7 +38,10 @@ const jsonLd = {
 
 <Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト" jsonLd={jsonLd}>
 	<section class="py-12 text-center">
-		<img src="/logo.png" alt="XIVPedia" width="224" height="224" class="mx-auto h-48 w-48 sm:h-56 sm:w-56" fetchpriority="high" decoding="async" />
+		<picture>
+			<source srcset="/logo.webp" type="image/webp" />
+			<img src="/logo.png" alt="XIVPedia" width="224" height="224" class="mx-auto h-48 w-48 sm:h-56 sm:w-56" fetchpriority="high" decoding="async" />
+		</picture>
 		<p class="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
 			ユーザー投稿型のFF14攻略サイト。<br />
 			攻略情報を共有して、みんなで冒険をもっと楽しもう。

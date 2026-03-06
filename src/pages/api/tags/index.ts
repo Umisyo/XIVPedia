@@ -30,6 +30,9 @@ export async function GET(context: APIContext): Promise<Response> {
 
 	return new Response(JSON.stringify({ data: grouped }), {
 		status: 200,
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+		},
 	});
 }
