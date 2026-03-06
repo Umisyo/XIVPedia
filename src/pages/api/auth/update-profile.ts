@@ -47,19 +47,22 @@ export async function POST(context: APIContext): Promise<Response> {
 		}
 	}
 
+	const TRUSTED_AVATAR_DOMAINS = ['lh3.googleusercontent.com', 'avatars.githubusercontent.com'];
+
 	if (obj.avatarUrl !== undefined) {
 		if (typeof obj.avatarUrl !== 'string') {
 			errors.avatarUrl = ['avatarUrl must be a string'];
 		} else {
 			try {
 				const parsed = new URL(obj.avatarUrl);
-				if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-					errors.avatarUrl = ['avatarUrl must be an HTTP(S) URL'];
+				if (parsed.protocol !== 'https:') {
+					errors.avatarUrl = ['avatarUrl must be an HTTPS URL'];
+				} else if (!TRUSTED_AVATAR_DOMAINS.includes(parsed.hostname)) {
+					errors.avatarUrl = ['avatarUrl domain is not allowed'];
 				} else {
 					updates.avatarUrl = obj.avatarUrl;
 				}
 			} catch {
-				// 相対パス（/api/images/... 等）も許可
 				if (obj.avatarUrl.startsWith('/api/images/')) {
 					updates.avatarUrl = obj.avatarUrl;
 				} else {
