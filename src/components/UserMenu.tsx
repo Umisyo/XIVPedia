@@ -38,10 +38,19 @@ export default function UserMenu({ displayName, avatarUrl, role }: Props) {
 				onClick={() => setIsOpen(!isOpen)}
 				aria-expanded={isOpen}
 				aria-haspopup="true"
+				aria-label="ユーザーメニュー"
 				className="flex items-center gap-2 text-foreground text-sm hover:text-primary transition-colors"
 			>
 				{avatarUrl ? (
-					<img src={avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+					<img
+						src={avatarUrl}
+						alt={`${displayName}のアバター`}
+						className="w-7 h-7 rounded-full object-cover"
+						width={28}
+						height={28}
+						loading="lazy"
+						decoding="async"
+					/>
 				) : (
 					<div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
 						<User size={14} className="text-muted-foreground" />

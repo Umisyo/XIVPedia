@@ -44,9 +44,37 @@ if (currentUser) {
 
 const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.role === 'admin';
 const isAdmin = currentUser?.profile?.role === 'admin';
+
+const siteOrigin = Astro.url.origin;
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Article',
+	headline: article.title,
+	description: description,
+	author: {
+		'@type': 'Person',
+		name: article.author.displayName,
+	},
+	datePublished: (article.publishedAt ?? article.createdAt).toISOString(),
+	dateModified:
+		article.updatedAt?.toISOString() ?? (article.publishedAt ?? article.createdAt).toISOString(),
+	publisher: {
+		'@type': 'Organization',
+		name: 'XIVPedia',
+		logo: {
+			'@type': 'ImageObject',
+			url: `${siteOrigin}/logo.png`,
+		},
+	},
+	mainEntityOfPage: {
+		'@type': 'WebPage',
+		'@id': `${siteOrigin}/articles/${article.slug}`,
+	},
+	image: `${siteOrigin}/ogp.png`,
+};
 ---
 
-<Layout title={article.title} description={description}>
+<Layout title={article.title} description={description} jsonLd={jsonLd}>
 	<article class="py-8 max-w-3xl mx-auto">
 		<header class="mb-8">
 			<div class="flex items-start justify-between gap-4">
@@ -78,7 +106,10 @@ const isAdmin = currentUser?.profile?.role === 'admin';
 							src={article.author.avatarUrl}
 							alt={article.author.displayName}
 							class="w-8 h-8 rounded-full"
+							width="32"
+							height="32"
 							loading="lazy"
+							decoding="async"
 						/>
 					) : (
 						<span class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">

@@ -32,7 +32,10 @@ const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 					src={author.avatarUrl}
 					alt={author.displayName}
 					class="w-5 h-5 rounded-full"
+					width="20"
+					height="20"
 					loading="lazy"
+					decoding="async"
 				/>
 			) : (
 				<span class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs">

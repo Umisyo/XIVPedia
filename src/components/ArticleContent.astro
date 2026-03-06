@@ -299,6 +299,14 @@ const { html, articleId, isLoggedIn = false } = Astro.props;
 </style>
 
 <script>
+	// Optimize user-uploaded images in article content
+	document.querySelectorAll('.article-content img').forEach((img) => {
+		if (img instanceof HTMLImageElement) {
+			if (!img.hasAttribute('loading')) img.loading = 'lazy';
+			if (!img.hasAttribute('decoding')) img.decoding = 'async';
+		}
+	});
+
 	document.addEventListener('click', (e) => {
 		const target = e.target as HTMLElement;
 		if (!target.classList.contains('ffxiv-macro-copy')) return;

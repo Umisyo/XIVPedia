@@ -7,11 +7,12 @@ interface Props {
 	title: string;
 	description?: string;
 	ogImage?: string;
+	jsonLd?: Record<string, unknown>;
 }
 
-const { title, description = 'FF14攻略共有サイト', ogImage } = Astro.props;
+const { title, description = 'FF14攻略共有サイト', ogImage, jsonLd } = Astro.props;
 const pageTitle = `${title} | XIVPedia`;
-const canonicalUrl = Astro.url.href;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).href;
 const siteOrigin = Astro.url.origin;
 const ogImageUrl = ogImage ?? `${siteOrigin}/ogp.png`;
 ---
@@ -26,6 +27,9 @@ const ogImageUrl = ogImage ?? `${siteOrigin}/ogp.png`;
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta name="robots" content="index, follow" />
+		<meta name="theme-color" content="#1a1a2e" />
 		<title>{pageTitle}</title>
 
 		<!-- OGP -->
@@ -34,14 +38,26 @@ const ogImageUrl = ogImage ?? `${siteOrigin}/ogp.png`;
 		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content={ogImageUrl} />
+		<meta property="og:site_name" content="XIVPedia" />
+		<meta property="og:locale" content="ja_JP" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
+
+		<!-- Preconnect to external origins for performance -->
+		<link rel="preconnect" href="https://lh3.googleusercontent.com" />
+
+		{jsonLd && (
+			<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+		)}
 	</head>
 	<body class="bg-background text-foreground min-h-screen flex flex-col">
+		<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:top-2 focus:left-2 focus:rounded-md">
+			メインコンテンツへスキップ
+		</a>
 		<Header />
-		<main class="container mx-auto px-4 py-8 max-w-4xl flex-1">
+		<main id="main-content" class="container mx-auto px-4 py-8 max-w-4xl flex-1" role="main">
 			<slot />
 		</main>
 		<Footer />

@@ -6,16 +6,16 @@ import UserMenu from './UserMenu.tsx';
 const currentUser = Astro.locals.currentUser;
 ---
 
-<header class="bg-card border-b border-border sticky top-0 z-50">
+<header class="bg-card border-b border-border sticky top-0 z-50" role="banner">
 	<div class="container mx-auto px-4 max-w-4xl">
 		<div class="flex items-center justify-between h-14">
 			<!-- Logo -->
-			<a href="/" class="text-primary font-bold text-xl hover:opacity-80 transition-opacity">
+			<a href="/" class="text-primary font-bold text-xl hover:opacity-80 transition-opacity" aria-label="XIVPedia トップページ">
 				XIVPedia
 			</a>
 
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex items-center gap-4">
+			<nav class="hidden md:flex items-center gap-4" aria-label="メインナビゲーション">
 				<a
 					href="/articles"
 					class="text-muted-foreground hover:text-foreground transition-colors"
