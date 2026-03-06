@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
@@ -106,6 +106,21 @@ export const tagRequests = pgTable('tag_requests', {
 	rejectionReason: text('rejection_reason'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	reviewedAt: timestamp('reviewed_at'),
+});
+
+// 通知
+export const notifications = pgTable('notifications', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	userId: uuid('user_id')
+		.references(() => profiles.id, { onDelete: 'cascade' })
+		.notNull(),
+	type: text('type', {
+		enum: ['comment', 'reaction', 'tag_request_approved', 'tag_request_rejected'],
+	}).notNull(),
+	message: text('message').notNull(),
+	link: text('link'),
+	isRead: boolean('is_read').default(false).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // 通報
