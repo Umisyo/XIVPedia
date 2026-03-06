@@ -2,7 +2,13 @@ import type { APIContext } from 'astro';
 import { eq } from 'drizzle-orm';
 import { tags } from '../../../../db/schema';
 import { deleteCategory, getCategoryById, updateCategory } from '../../../../lib/categories';
-import { forbidden, notFound, unauthorized, validationError } from '../../../../lib/errors';
+import {
+	errorResponse,
+	forbidden,
+	notFound,
+	unauthorized,
+	validationError,
+} from '../../../../lib/errors';
 import { validateUpdateCategory } from '../../../../lib/validation';
 
 export async function PATCH(context: APIContext): Promise<Response> {
@@ -56,7 +62,8 @@ export async function PATCH(context: APIContext): Promise<Response> {
 		if (err instanceof Error && err.message.includes('unique')) {
 			return validationError({ slug: ['同じ名前またはスラグのカテゴリが既に存在します'] });
 		}
-		throw err;
+		console.error('Failed to update category:', err);
+		return errorResponse(500, 'INTERNAL_ERROR', 'An internal error occurred');
 	}
 }
 

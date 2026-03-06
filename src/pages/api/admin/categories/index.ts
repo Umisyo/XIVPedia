@@ -1,6 +1,6 @@
 import type { APIContext } from 'astro';
 import { createCategory, listCategories } from '../../../../lib/categories';
-import { forbidden, unauthorized, validationError } from '../../../../lib/errors';
+import { errorResponse, forbidden, unauthorized, validationError } from '../../../../lib/errors';
 import { validateCreateCategory } from '../../../../lib/validation';
 
 export async function GET(context: APIContext): Promise<Response> {
@@ -60,6 +60,7 @@ export async function POST(context: APIContext): Promise<Response> {
 		if (err instanceof Error && err.message.includes('unique')) {
 			return validationError({ slug: ['同じ名前またはスラグのカテゴリが既に存在します'] });
 		}
-		throw err;
+		console.error('Failed to create category:', err);
+		return errorResponse(500, 'INTERNAL_ERROR', 'An internal error occurred');
 	}
 }

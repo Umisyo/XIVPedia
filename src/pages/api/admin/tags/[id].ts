@@ -1,6 +1,12 @@
 import type { APIContext } from 'astro';
 import { listCategorySlugs } from '../../../../lib/categories';
-import { forbidden, notFound, unauthorized, validationError } from '../../../../lib/errors';
+import {
+	errorResponse,
+	forbidden,
+	notFound,
+	unauthorized,
+	validationError,
+} from '../../../../lib/errors';
 import { deleteTag, generateTagSlug, getTagById, updateTag } from '../../../../lib/tags';
 import { validateUpdateTag } from '../../../../lib/validation';
 
@@ -71,7 +77,8 @@ export async function PATCH(context: APIContext): Promise<Response> {
 		if (err instanceof Error && err.message.includes('unique')) {
 			return validationError({ name: ['同じ名前またはスラグのタグが既に存在します'] });
 		}
-		throw err;
+		console.error('Failed to update tag:', err);
+		return errorResponse(500, 'INTERNAL_ERROR', 'An internal error occurred');
 	}
 }
 
