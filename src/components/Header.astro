@@ -50,7 +50,7 @@ const currentUser = Astro.locals.currentUser;
 							</a>
 							<NotificationBell client:load />
 							<UserMenu
-								client:load
+								client:idle
 								displayName={currentUser.profile?.displayName ?? currentUser.email}
 								avatarUrl={currentUser.profile?.avatarUrl ?? undefined}
 								role={currentUser.profile?.role ?? undefined}
@@ -70,7 +70,7 @@ const currentUser = Astro.locals.currentUser;
 
 			<!-- Mobile Navigation -->
 			<MobileNav
-				client:load
+				client:idle
 				user={currentUser ? {
 					displayName: currentUser.profile?.displayName ?? currentUser.email,
 					avatarUrl: currentUser.profile?.avatarUrl ?? undefined,
