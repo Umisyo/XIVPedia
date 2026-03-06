@@ -29,6 +29,13 @@
 			"when": 1772764702890,
 			"tag": "0006_flaky_moondragon",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1772938800000,
+			"tag": "0008_add_trgm_indexes",
+			"breakpoints": true
 		}
 	]
 }
