@@ -90,6 +90,21 @@ export const reactions = pgTable(
 	(t) => [primaryKey({ columns: [t.articleId, t.userId] })],
 );
 
+// ブックマーク（お気に入り）
+export const bookmarks = pgTable(
+	'bookmarks',
+	{
+		userId: uuid('user_id')
+			.references(() => profiles.id, { onDelete: 'cascade' })
+			.notNull(),
+		articleId: uuid('article_id')
+			.references(() => articles.id, { onDelete: 'cascade' })
+			.notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+	},
+	(t) => [primaryKey({ columns: [t.userId, t.articleId] })],
+);
+
 // タグ申請
 export const tagRequests = pgTable('tag_requests', {
 	id: uuid('id').defaultRandom().primaryKey(),
