@@ -227,6 +227,7 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 							content={body}
 							onChange={setBody}
 							onInsertMacro={handleInsertMacro}
+							onOpenDiagram={() => setIsDiagramOpen(true)}
 						/>
 						{errors.body && <p className="text-sm text-destructive mt-1">{errors.body[0]}</p>}
 						<p className="text-xs text-muted-foreground text-right mt-1">
@@ -292,16 +293,19 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 				)}
 			</div>
 
-			{/* Diagram button */}
-			<Button type="button" variant="outline" onClick={() => setIsDiagramOpen(true)}>
-				<Grid2x2 className="h-4 w-4" />
-				散開図
-			</Button>
-
-			{/* Image uploader & Macro insert (Markdown mode only) */}
+			{/* Diagram, Image uploader & Macro insert (Markdown mode only) */}
 			{editorMode === 'markdown' && (
 				<div className="space-y-3">
 					<div className="flex gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={() => setIsDiagramOpen(true)}
+						>
+							<Grid2x2 className="h-4 w-4 mr-1" />
+							散開図
+						</Button>
 						<Button
 							type="button"
 							variant="outline"
