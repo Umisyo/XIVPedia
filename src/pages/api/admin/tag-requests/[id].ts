@@ -9,6 +9,7 @@ import {
 	unauthorized,
 	validationError,
 } from '../../../../lib/errors';
+import { createNotification } from '../../../../lib/notifications';
 import { getTagRequestById, reviewTagRequest } from '../../../../lib/tag-requests';
 import { createTag, generateTagSlug } from '../../../../lib/tags';
 import { validateReviewTagRequest } from '../../../../lib/validation';
@@ -92,6 +93,13 @@ export async function PATCH(context: APIContext): Promise<Response> {
 				return notFound('Tag request not found or already processed');
 			}
 
+			await createNotification(db, {
+				userId: existing.requesterId,
+				type: 'tag_request_approved',
+				message: `タグ申請「${existing.name}」が承認されました`,
+				link: '/tags',
+			});
+
 			return new Response(JSON.stringify({ request: updated }), {
 				status: 200,
 				headers: { 'Content-Type': 'application/json' },
@@ -108,6 +116,13 @@ export async function PATCH(context: APIContext): Promise<Response> {
 		if (!updated) {
 			return notFound('Tag request not found or already processed');
 		}
+
+		await createNotification(db, {
+			userId: existing.requesterId,
+			type: 'tag_request_rejected',
+			message: `タグ申請「${existing.name}」が却下されました${result.data.rejectionReason ? `: ${result.data.rejectionReason}` : ''}`,
+			link: '/tag-requests',
+		});
 
 		return new Response(JSON.stringify({ request: updated }), {
 			status: 200,
