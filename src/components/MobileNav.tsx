@@ -32,7 +32,10 @@ export default function MobileNav({ user }: Props) {
 
 			{isOpen && (
 				<div className="absolute top-14 left-0 right-0 bg-card border-b border-border z-40">
-					<nav className="container mx-auto px-4 max-w-4xl py-4 flex flex-col gap-4">
+					<nav
+						className="container mx-auto px-4 max-w-4xl py-4 flex flex-col gap-4"
+						aria-label="モバイルナビゲーション"
+					>
 						<a
 							href="/articles"
 							className="text-muted-foreground hover:text-foreground transition-colors py-2"
@@ -75,8 +78,12 @@ export default function MobileNav({ user }: Props) {
 									{user.avatarUrl ? (
 										<img
 											src={user.avatarUrl}
-											alt=""
+											alt={`${user.displayName}のアバター`}
 											className="w-7 h-7 rounded-full object-cover"
+											width={28}
+											height={28}
+											loading="lazy"
+											decoding="async"
 										/>
 									) : (
 										<div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">

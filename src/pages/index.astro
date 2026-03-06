@@ -17,19 +17,36 @@ const [{ data: popularArticles }, { data: newestArticles }, allTags, categories]
 const groupedTags = groupTagsByCategory(allTags);
 const categoryLabels = new Map(categories.map((c) => [c.slug, c.name]));
 const categorySlugs = categories.map((c) => c.slug);
+
+const siteOrigin = Astro.url.origin;
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: 'XIVPedia',
+	url: siteOrigin,
+	description: 'ユーザー投稿型のFF14攻略サイト。攻略情報を共有して、みんなで冒険をもっと楽しもう。',
+	potentialAction: {
+		'@type': 'SearchAction',
+		target: {
+			'@type': 'EntryPoint',
+			urlTemplate: `${siteOrigin}/search?q={search_term_string}`,
+		},
+		'query-input': 'required name=search_term_string',
+	},
+};
 ---
 
-<Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト">
+<Layout title="トップ" description="XIVPedia - ユーザー投稿型のFF14攻略サイト" jsonLd={jsonLd}>
 	<section class="py-12 text-center">
-		<img src="/logo.png" alt="XIVPedia" class="mx-auto h-48 w-48 sm:h-56 sm:w-56" />
+		<img src="/logo.png" alt="XIVPedia" width="224" height="224" class="mx-auto h-48 w-48 sm:h-56 sm:w-56" fetchpriority="high" decoding="async" />
 		<p class="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
 			ユーザー投稿型のFF14攻略サイト。<br />
 			攻略情報を共有して、みんなで冒険をもっと楽しもう。
 		</p>
 	</section>
 
-	<section class="pb-12">
-		<h2 class="text-2xl font-bold text-foreground mb-6">🔥 人気の記事</h2>
+	<section class="pb-12" aria-labelledby="popular-heading">
+		<h2 id="popular-heading" class="text-2xl font-bold text-foreground mb-6">🔥 人気の記事</h2>
 
 		{popularArticles.length > 0 ? (
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -52,8 +69,8 @@ const categorySlugs = categories.map((c) => c.slug);
 		)}
 	</section>
 
-	<section class="pb-12">
-		<h2 class="text-2xl font-bold text-foreground mb-6">🆕 新着記事</h2>
+	<section class="pb-12" aria-labelledby="newest-heading">
+		<h2 id="newest-heading" class="text-2xl font-bold text-foreground mb-6">🆕 新着記事</h2>
 
 		{newestArticles.length > 0 ? (
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -76,8 +93,8 @@ const categorySlugs = categories.map((c) => c.slug);
 		)}
 	</section>
 
-	<section class="pb-16">
-		<h2 class="text-2xl font-bold text-foreground mb-6">🏷️ カテゴリ</h2>
+	<section class="pb-16" aria-labelledby="category-heading">
+		<h2 id="category-heading" class="text-2xl font-bold text-foreground mb-6">🏷️ カテゴリ</h2>
 
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{categorySlugs.map((category) => {
