@@ -155,21 +155,32 @@ export function EditorToolbar({ editor, onInsertMacro, onOpenDiagram }: EditorTo
 
 			<ToolbarSeparator />
 
-			<ToolbarButton
-				onClick={() => setShowMacroDialog(true)}
-				active={false}
-				tooltip="FF14マクロを挿入"
-			>
-				<Gamepad2 className="h-4 w-4" />
-			</ToolbarButton>
 			<ToolbarButton onClick={toggleLink} active={editor.isActive('link')} tooltip="リンクを挿入">
 				<Link className="h-4 w-4" />
 			</ToolbarButton>
-			{onOpenDiagram && (
-				<ToolbarButton onClick={onOpenDiagram} active={false} tooltip="散開図を作成">
-					<Grid2x2 className="h-4 w-4" />
-				</ToolbarButton>
-			)}
+
+			<ToolbarSeparator />
+
+			<div className="flex items-center gap-1 ml-0.5">
+				<button
+					type="button"
+					onClick={() => setShowMacroDialog(true)}
+					className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+				>
+					<Gamepad2 className="h-3.5 w-3.5" />
+					<span className="hidden sm:inline">マクロ</span>
+				</button>
+				{onOpenDiagram && (
+					<button
+						type="button"
+						onClick={onOpenDiagram}
+						className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+					>
+						<Grid2x2 className="h-3.5 w-3.5" />
+						<span className="hidden sm:inline">散開図</span>
+					</button>
+				)}
+			</div>
 
 			<ToolbarSeparator />
 
