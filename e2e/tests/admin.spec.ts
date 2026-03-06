@@ -10,22 +10,18 @@ test.describe('管理者ダッシュボード', () => {
 		expect(page.url()).not.toContain('/admin');
 	});
 
-	test('一般ユーザー（未ログイン）は管理画面の見出しを見ることができない', async ({
-		page,
-	}) => {
+	test('一般ユーザー（未ログイン）は管理画面の見出しを見ることができない', async ({ page }) => {
 		await page.goto('/admin');
 		// リダイレクトされるため、管理画面の見出しは表示されない
 		const adminHeading = page.getByRole('heading', { name: '管理画面' });
 		await expect(adminHeading).not.toBeVisible();
 	});
 
-	test('/admin ページはリダイレクト後にトップページのコンテンツが表示される', async ({
-		page,
-	}) => {
+	test('/admin ページはリダイレクト後にトップページのコンテンツが表示される', async ({ page }) => {
 		await page.goto('/admin');
 		// トップページにリダイレクトされるため、トップページの要素が表示される
 		await page.waitForURL(/\/$/);
-		const heading = page.locator('h1');
-		await expect(heading).toBeVisible();
+		const logo = page.locator('section img[alt="XIVPedia"]');
+		await expect(logo).toBeVisible();
 	});
 });

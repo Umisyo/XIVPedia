@@ -13,7 +13,6 @@ test.describe('プロフィール設定', () => {
 		await page.goto('/settings/profile');
 		await page.waitForURL(/\/login/);
 		// リダイレクトされるため、設定ページの要素は表示されない
-		const settingsHeading = page.getByRole('heading', { name: 'プロフィール設定' });
 		// ログインページに「プロフィール設定」見出しが存在しないことを確認
 		// ※ログインページの見出しは「ログイン」
 		const loginHeading = page.locator('main').getByText('ログイン', { exact: true });
