@@ -18,7 +18,10 @@ export async function GET(context: APIContext): Promise<Response> {
 
 	return new Response(JSON.stringify({ data: article }), {
 		status: 200,
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+		},
 	});
 }
 
