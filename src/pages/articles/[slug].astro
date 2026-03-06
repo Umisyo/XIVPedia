@@ -1,10 +1,11 @@
 ---
-import { and, count as countFn, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import ArticleContent from '../../components/ArticleContent.astro';
 import ArticleDeleteButton from '../../components/ArticleDeleteButton.tsx';
+import BookmarkButton from '../../components/BookmarkButton.tsx';
 import CommentSection from '../../components/comments/CommentSection.tsx';
 import ReactionButton from '../../components/ReactionButton.tsx';
-import { reactions } from '../../db/schema';
+import { bookmarks, reactions } from '../../db/schema';
 import Layout from '../../layouts/Layout.astro';
 import { getArticleBySlug } from '../../lib/articles';
 import { renderMarkdown } from '../../lib/markdown';
@@ -23,12 +24,7 @@ const description = article.body
 	.replace(/\n/g, ' ')
 	.slice(0, 120);
 
-// リアクション数を取得
-const [reactionResult] = await Astro.locals.db
-	.select({ count: countFn() })
-	.from(reactions)
-	.where(eq(reactions.articleId, article.id));
-const reactionCount = reactionResult?.count ?? 0;
+const reactionCount = article.reactionCount;
 
 // ログインユーザーのリアクション状態を取得
 const currentUser = Astro.locals.currentUser;
@@ -40,6 +36,17 @@ if (currentUser) {
 		.where(and(eq(reactions.articleId, article.id), eq(reactions.userId, currentUser.id)))
 		.limit(1);
 	reacted = !!userReaction;
+}
+
+// ログインユーザーのブックマーク状態を取得
+let bookmarked = false;
+if (currentUser) {
+	const [userBookmark] = await Astro.locals.db
+		.select({ articleId: bookmarks.articleId })
+		.from(bookmarks)
+		.where(and(eq(bookmarks.articleId, article.id), eq(bookmarks.userId, currentUser.id)))
+		.limit(1);
+	bookmarked = !!userBookmark;
 }
 
 const canEdit = currentUser?.id === article.author.id || currentUser?.profile?.role === 'admin';
@@ -93,7 +100,7 @@ const jsonLd = {
 							</a>
 						)}
 						{isAdmin && (
-							<ArticleDeleteButton client:load slug={article.slug} />
+							<ArticleDeleteButton client:idle slug={article.slug} />
 						)}
 					</div>
 				)}
@@ -143,18 +150,24 @@ const jsonLd = {
 
 		<ArticleContent html={html} articleId={article.id} isLoggedIn={!!currentUser} />
 
-		<div class="mt-8 flex justify-start">
+		<div class="mt-8 flex items-start gap-3">
 			<ReactionButton
-				client:load
+				client:visible
 				slug={article.slug}
 				initialCount={reactionCount}
 				initialReacted={reacted}
 				isAuthenticated={!!currentUser}
 			/>
+			<BookmarkButton
+				client:load
+				slug={article.slug}
+				initialBookmarked={bookmarked}
+				isAuthenticated={!!currentUser}
+			/>
 		</div>
 
 		<CommentSection
-			client:load
+			client:visible
 			slug={article.slug}
 			articleAuthorId={article.author.id}
 			currentUser={currentUser ? {

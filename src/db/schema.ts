@@ -1,4 +1,4 @@
-import { index, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
@@ -112,6 +112,21 @@ export const reactions = pgTable(
 	],
 );
 
+// ブックマーク（お気に入り）
+export const bookmarks = pgTable(
+	'bookmarks',
+	{
+		userId: uuid('user_id')
+			.references(() => profiles.id, { onDelete: 'cascade' })
+			.notNull(),
+		articleId: uuid('article_id')
+			.references(() => articles.id, { onDelete: 'cascade' })
+			.notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+	},
+	(t) => [primaryKey({ columns: [t.userId, t.articleId] })],
+);
+
 // タグ申請
 export const tagRequests = pgTable(
 	'tag_requests',
@@ -133,6 +148,21 @@ export const tagRequests = pgTable(
 	},
 	(t) => [index('tag_requests_status_idx').on(t.status)],
 );
+
+// 通知
+export const notifications = pgTable('notifications', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	userId: uuid('user_id')
+		.references(() => profiles.id, { onDelete: 'cascade' })
+		.notNull(),
+	type: text('type', {
+		enum: ['comment', 'reaction', 'tag_request_approved', 'tag_request_rejected'],
+	}).notNull(),
+	message: text('message').notNull(),
+	link: text('link'),
+	isRead: boolean('is_read').default(false).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 // 通報
 export const reports = pgTable(

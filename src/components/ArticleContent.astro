@@ -14,7 +14,7 @@ const { html, articleId, isLoggedIn = false } = Astro.props;
 	{articleId && (
 		<div class="mb-4 flex justify-end">
 			<ReportButton
-				client:load
+				client:idle
 				targetType="article"
 				targetId={articleId}
 				isLoggedIn={isLoggedIn}
