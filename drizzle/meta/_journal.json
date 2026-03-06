@@ -33,8 +33,15 @@
 		{
 			"idx": 7,
 			"version": "7",
-			"when": 1772780733854,
-			"tag": "0007_brief_jamie_braddock",
+			"when": 1772780810163,
+			"tag": "0007_wide_bloodstorm",
+			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1772781508397,
+			"tag": "0008_bookmarks",
 			"breakpoints": true
 		}
 	]
