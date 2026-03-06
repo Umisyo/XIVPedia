@@ -64,6 +64,9 @@ export function TagSelector({ tags, selectedIds, onChange, categories }: TagSele
 					</div>
 				</div>
 			))}
+			<p className="text-xs text-muted-foreground">
+				ここにないタグが欲しい場合は、右上のメニューからタグ申請できます
+			</p>
 		</div>
 	);
 }
