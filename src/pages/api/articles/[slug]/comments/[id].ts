@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { articles, comments } from '../../../../../db/schema';
 import { forbidden, notFound, unauthorized } from '../../../../../lib/errors';
 
@@ -25,7 +25,7 @@ export async function DELETE(context: APIContext): Promise<Response> {
 	const commentRow = await db
 		.select({ id: comments.id, authorId: comments.authorId })
 		.from(comments)
-		.where(eq(comments.id, commentId))
+		.where(and(eq(comments.id, commentId), eq(comments.articleId, articleRow[0].id)))
 		.limit(1);
 
 	if (commentRow.length === 0) {
