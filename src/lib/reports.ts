@@ -1,6 +1,6 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 import type { Database } from '../db';
-import { reports } from '../db/schema';
+import { articles, reports } from '../db/schema';
 
 export interface CreateReportData {
 	reason: 'spam' | 'inappropriate' | 'misleading' | 'other';
@@ -62,8 +62,22 @@ export async function listReports(db: Database, options: ListReportsOptions = {}
 	const totalResult = await db.select({ total: count() }).from(reports).where(where);
 
 	const rows = await db
-		.select()
+		.select({
+			id: reports.id,
+			reason: reports.reason,
+			description: reports.description,
+			targetType: reports.targetType,
+			targetId: reports.targetId,
+			reporterId: reports.reporterId,
+			status: reports.status,
+			resolvedBy: reports.resolvedBy,
+			resolvedAt: reports.resolvedAt,
+			createdAt: reports.createdAt,
+			targetSlug: sql<string | null>`${articles.slug}`,
+			targetTitle: sql<string | null>`${articles.title}`,
+		})
 		.from(reports)
+		.leftJoin(articles, and(eq(reports.targetType, 'article'), eq(reports.targetId, articles.id)))
 		.where(where)
 		.orderBy(desc(reports.createdAt))
 		.limit(limit)

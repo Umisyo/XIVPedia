@@ -6,6 +6,8 @@ interface Report {
 	description: string | null;
 	targetType: 'article' | 'comment';
 	targetId: string;
+	targetSlug: string | null;
+	targetTitle: string | null;
 	reporterId: string;
 	status: 'pending' | 'resolved' | 'dismissed';
 	resolvedBy: string | null;
@@ -137,12 +139,18 @@ export default function ReportManagement() {
 		});
 	}
 
-	function getTargetLink(targetType: Report['targetType'], targetId: string): string {
-		return targetType === 'article' ? `/articles/${targetId}` : '#';
+	function getTargetLink(report: Report): string {
+		if (report.targetType === 'article' && report.targetSlug) {
+			return `/articles/${report.targetSlug}`;
+		}
+		return '#';
 	}
 
-	function getTargetLabel(targetType: Report['targetType']): string {
-		return targetType === 'article' ? '記事' : 'コメント';
+	function getTargetLabel(report: Report): string {
+		if (report.targetType === 'article') {
+			return report.targetTitle ?? `記事 (${report.targetId.slice(0, 8)})`;
+		}
+		return 'コメント';
 	}
 
 	if (isLoading) {
@@ -231,10 +239,10 @@ export default function ReportManagement() {
 											</td>
 											<td className="px-4 py-3">
 												<a
-													href={getTargetLink(report.targetType, report.targetId)}
+													href={getTargetLink(report)}
 													className="text-sm text-primary hover:underline"
 												>
-													{getTargetLabel(report.targetType)} ({report.targetId.slice(0, 8)})
+													{getTargetLabel(report)}
 												</a>
 											</td>
 											<td className="px-4 py-3">
@@ -300,10 +308,10 @@ export default function ReportManagement() {
 									)}
 									<div className="flex items-center justify-between">
 										<a
-											href={getTargetLink(report.targetType, report.targetId)}
+											href={getTargetLink(report)}
 											className="text-sm text-primary hover:underline"
 										>
-											{getTargetLabel(report.targetType)} ({report.targetId.slice(0, 8)})
+											{getTargetLabel(report)}
 										</a>
 										<span className="text-xs text-muted-foreground">
 											{formatDate(report.createdAt)}
