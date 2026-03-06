@@ -3,6 +3,13 @@ const RATE_LIMITS: Record<string, { window: number; max: number }> = {
 	'POST /api/articles/*/comments': { window: 60, max: 5 },
 	'POST /api/reports': { window: 3600, max: 20 },
 	'POST /api/images/upload': { window: 3600, max: 30 },
+	'PUT /api/images/*': { window: 3600, max: 30 },
+	'PUT /api/articles/*': { window: 3600, max: 30 },
+	'DELETE /api/articles/*': { window: 3600, max: 10 },
+	'DELETE /api/articles/*/comments/*': { window: 3600, max: 20 },
+	'PATCH /api/admin/*': { window: 3600, max: 30 },
+	'GET /api/search': { window: 60, max: 30 },
+	'GET /api/auth/check-username': { window: 60, max: 20 },
 };
 
 function matchRateLimitKey(

@@ -1,4 +1,5 @@
 import { Marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
 import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 import vitesseDark from 'shiki/themes/vitesse-dark.mjs';
@@ -70,5 +71,37 @@ export async function renderMarkdown(markdown: string): Promise<string> {
 	marked.use({ renderer });
 
 	const html = await marked.parse(markdown);
-	return html;
+	const sanitized = sanitizeHtml(html, {
+		allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+			'img',
+			'svg',
+			'circle',
+			'rect',
+			'line',
+			'text',
+			'pre',
+			'code',
+			'span',
+			'div',
+			'button',
+		]),
+		allowedAttributes: {
+			...sanitizeHtml.defaults.allowedAttributes,
+			'*': ['class', 'style'],
+			img: ['src', 'alt', 'width', 'height'],
+			svg: ['xmlns', 'viewBox', 'width', 'height'],
+			circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'stroke-width', 'opacity'],
+			rect: ['x', 'y', 'width', 'height', 'fill', 'stroke', 'stroke-width', 'rx', 'opacity'],
+			line: ['x1', 'y1', 'x2', 'y2', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity'],
+			text: ['x', 'y', 'text-anchor', 'fill', 'font-size', 'font-weight', 'font-family'],
+			span: ['style'],
+			code: ['class'],
+			pre: ['class'],
+			a: ['href', 'target', 'rel'],
+			button: ['type', 'class', 'data-macro-text'],
+		},
+		allowedSchemes: ['http', 'https'],
+		disallowedTagsMode: 'discard',
+	});
+	return sanitized;
 }
