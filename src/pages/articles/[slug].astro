@@ -1,5 +1,5 @@
 ---
-import { and, count as countFn, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import ArticleContent from '../../components/ArticleContent.astro';
 import ArticleDeleteButton from '../../components/ArticleDeleteButton.tsx';
 import CommentSection from '../../components/comments/CommentSection.tsx';
@@ -23,12 +23,7 @@ const description = article.body
 	.replace(/\n/g, ' ')
 	.slice(0, 120);
 
-// リアクション数を取得
-const [reactionResult] = await Astro.locals.db
-	.select({ count: countFn() })
-	.from(reactions)
-	.where(eq(reactions.articleId, article.id));
-const reactionCount = reactionResult?.count ?? 0;
+const reactionCount = article.reactionCount;
 
 // ログインユーザーのリアクション状態を取得
 const currentUser = Astro.locals.currentUser;
@@ -93,7 +88,7 @@ const jsonLd = {
 							</a>
 						)}
 						{isAdmin && (
-							<ArticleDeleteButton client:load slug={article.slug} />
+							<ArticleDeleteButton client:idle slug={article.slug} />
 						)}
 					</div>
 				)}
@@ -145,7 +140,7 @@ const jsonLd = {
 
 		<div class="mt-8 flex justify-start">
 			<ReactionButton
-				client:load
+				client:visible
 				slug={article.slug}
 				initialCount={reactionCount}
 				initialReacted={reacted}
@@ -154,7 +149,7 @@ const jsonLd = {
 		</div>
 
 		<CommentSection
-			client:load
+			client:visible
 			slug={article.slug}
 			articleAuthorId={article.author.id}
 			currentUser={currentUser ? {

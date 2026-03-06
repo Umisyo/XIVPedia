@@ -2,6 +2,7 @@ import type { APIContext } from 'astro';
 import { count, desc, eq } from 'drizzle-orm';
 import { articles, comments, profiles } from '../../../../../db/schema';
 import { notFound, unauthorized, validationError } from '../../../../../lib/errors';
+import { createNotification } from '../../../../../lib/notifications';
 import { validateCreateComment } from '../../../../../lib/validation';
 
 export async function GET(context: APIContext): Promise<Response> {
@@ -76,7 +77,7 @@ export async function POST(context: APIContext): Promise<Response> {
 	}
 
 	const articleRow = await db
-		.select({ id: articles.id })
+		.select({ id: articles.id, authorId: articles.authorId, title: articles.title })
 		.from(articles)
 		.where(eq(articles.slug, slug))
 		.limit(1);
@@ -85,16 +86,26 @@ export async function POST(context: APIContext): Promise<Response> {
 		return notFound('Article not found');
 	}
 
-	const articleId = articleRow[0].id;
+	const article = articleRow[0];
 
 	const [inserted] = await db
 		.insert(comments)
 		.values({
 			body: validation.data.body,
-			articleId,
+			articleId: article.id,
 			authorId: currentUser.id,
 		})
 		.returning();
+
+	// 自分自身の記事へのコメントでなければ通知を作成
+	if (article.authorId !== currentUser.id) {
+		await createNotification(db, {
+			userId: article.authorId,
+			type: 'comment',
+			message: `あなたの記事「${article.title}」に新しいコメントがつきました`,
+			link: `/articles/${slug}`,
+		});
+	}
 
 	const [commentWithAuthor] = await db
 		.select({
