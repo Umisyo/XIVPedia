@@ -2,6 +2,7 @@
 import { ArticleEditor } from '../../../components/editor/ArticleEditor';
 import Layout from '../../../layouts/Layout.astro';
 import { getArticleBySlug } from '../../../lib/articles';
+import { listCategories } from '../../../lib/categories';
 import { listTags, type TagInfo } from '../../../lib/tags';
 
 const { currentUser } = Astro.locals;
@@ -27,7 +28,11 @@ if (!isAuthor && !isAdmin) {
 	return new Response(null, { status: 403, statusText: 'Forbidden' });
 }
 
-const tags = await listTags(Astro.locals.db);
+const [tags, categoryList] = await Promise.all([
+	listTags(Astro.locals.db),
+	listCategories(Astro.locals.db),
+]);
+const categories = categoryList.map((c) => ({ slug: c.slug, name: c.name }));
 const articleData = {
 	id: article.id,
 	title: article.title,
@@ -42,6 +47,6 @@ const articleData = {
 <Layout title={`${article.title} を編集`}>
 	<div class="py-4">
 		<h1 class="text-2xl font-bold mb-6">記事を編集</h1>
-		<ArticleEditor client:load mode="edit" tags={tags} article={articleData} />
+		<ArticleEditor client:load mode="edit" tags={tags} categories={categories} article={articleData} />
 	</div>
 </Layout>

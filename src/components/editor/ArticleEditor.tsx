@@ -8,7 +8,7 @@ import type { TagInfo } from '@/lib/tags';
 import { ImageUploader } from './ImageUploader';
 import { MarkdownPreview } from './MarkdownPreview';
 import { RichTextEditor } from './RichTextEditor';
-import { TagSelector } from './TagSelector';
+import { type CategoryLabel, TagSelector } from './TagSelector';
 
 interface ArticleData {
 	id: string;
@@ -23,12 +23,13 @@ interface ArticleData {
 interface ArticleEditorProps {
 	mode: 'new' | 'edit';
 	tags: TagInfo[];
+	categories?: CategoryLabel[];
 	article?: ArticleData;
 }
 
 type EditorMode = 'visual' | 'markdown';
 
-export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
+export function ArticleEditor({ mode, tags, categories, article }: ArticleEditorProps) {
 	const [title, setTitle] = useState(article?.title ?? '');
 	const [body, setBody] = useState(article?.body ?? '');
 	const [selectedTags, setSelectedTags] = useState<string[]>(article?.tags.map((t) => t.id) ?? []);
@@ -156,7 +157,12 @@ export function ArticleEditor({ mode, tags, article }: ArticleEditorProps) {
 			</div>
 
 			{/* Tags */}
-			<TagSelector tags={tags} selectedIds={selectedTags} onChange={setSelectedTags} />
+			<TagSelector
+				tags={tags}
+				selectedIds={selectedTags}
+				onChange={setSelectedTags}
+				categories={categories}
+			/>
 			{errors.tags && <p className="text-sm text-destructive">{errors.tags[0]}</p>}
 
 			{/* Patch */}
