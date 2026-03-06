@@ -194,7 +194,7 @@ export default function ReportManagement() {
 						value={statusFilter}
 						onChange={(e) => handleFilterChange(e.target.value as StatusFilter)}
 						aria-label="ステータスフィルタ"
-					className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+						className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
 					>
 						{FILTER_OPTIONS.map((option) => (
 							<option key={option.value} value={option.value}>

@@ -144,7 +144,7 @@ export function OnboardingForm({
 										size="sm"
 										disabled={uploading}
 										onClick={() => fileInputRef.current?.click()}
-									aria-label="アバターを変更"
+										aria-label="アバターを変更"
 									>
 										<Camera size={16} className="mr-1" />
 										{uploading ? 'アップロード中...' : '画像を変更'}
@@ -176,19 +176,19 @@ export function OnboardingForm({
 							<p className="text-xs text-muted-foreground">英数字とアンダースコアのみ、3〜20文字</p>
 							<div aria-live="polite">
 								{usernameStatus === 'checking' && (
-								<p className="text-xs text-muted-foreground">確認中...</p>
-							)}
-							{usernameStatus === 'available' && (
-								<p className="text-xs text-green-600">このユーザー名は使用できます</p>
-							)}
-							{usernameStatus === 'taken' && (
-								<p className="text-xs text-destructive">このユーザー名は既に使用されています</p>
-							)}
-							{usernameStatus === 'invalid' && (
-								<p className="text-xs text-destructive">
-									英数字とアンダースコアのみ、3〜20文字で入力してください
-								</p>
-							)}
+									<p className="text-xs text-muted-foreground">確認中...</p>
+								)}
+								{usernameStatus === 'available' && (
+									<p className="text-xs text-green-600">このユーザー名は使用できます</p>
+								)}
+								{usernameStatus === 'taken' && (
+									<p className="text-xs text-destructive">このユーザー名は既に使用されています</p>
+								)}
+								{usernameStatus === 'invalid' && (
+									<p className="text-xs text-destructive">
+										英数字とアンダースコアのみ、3〜20文字で入力してください
+									</p>
+								)}
 							</div>
 						</div>
 						<div className="space-y-2">
