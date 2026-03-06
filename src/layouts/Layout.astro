@@ -45,6 +45,9 @@ const ogImageUrl = ogImage ?? `${siteOrigin}/ogp.png`;
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
 
+		<!-- RSS autodiscovery -->
+		<link rel="alternate" type="application/rss+xml" title="XIVPedia RSS Feed" href="/rss.xml" />
+
 		<!-- Preconnect to external origins for performance -->
 		<link rel="preconnect" href="https://lh3.googleusercontent.com" />
 
