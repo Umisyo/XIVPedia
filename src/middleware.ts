@@ -9,6 +9,12 @@ import { createSupabaseClient } from './lib/supabase';
 const ONBOARDING_SKIP_PATHS = ['/onboarding', '/api/', '/login', '/register'];
 
 export const onRequest = defineMiddleware(async (context, next) => {
+	// ビルド時のprerender中はCloudflare runtimeが存在しない
+	if (!context.locals.runtime?.env) {
+		context.locals.currentUser = null;
+		return next();
+	}
+
 	const pathname = context.url.pathname;
 
 	// 静的アセットは認証・DB不要
