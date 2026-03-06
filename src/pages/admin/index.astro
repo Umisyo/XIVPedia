@@ -1,5 +1,6 @@
 ---
 import CategoryManagement from '../../components/admin/CategoryManagement.tsx';
+import ReportManagement from '../../components/admin/ReportManagement.tsx';
 import TagManagement from '../../components/admin/TagManagement.tsx';
 import UserManagement from '../../components/admin/UserManagement.tsx';
 import Layout from '../../layouts/Layout.astro';
@@ -18,5 +19,6 @@ if (!currentUser || currentUser.profile?.role !== 'admin') {
 		<CategoryManagement client:load />
 		<TagManagement client:load />
 		<UserManagement client:load currentUserId={currentUser.id} />
+		<ReportManagement client:load />
 	</div>
 </Layout>
