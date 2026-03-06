@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Settings, Shield, User } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, Shield, Tag, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -51,8 +51,15 @@ export default function UserMenu({ displayName, avatarUrl, role }: Props) {
 						</a>
 					)}
 					<a
+						href="/tag-requests"
+						className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+					>
+						<Tag size={16} />
+						タグ申請
+					</a>
+					<a
 						href="/settings/profile"
-						className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ${role !== 'admin' ? 'rounded-t-md' : ''}`}
+						className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
 					>
 						<Settings size={16} />
 						プロフィール設定

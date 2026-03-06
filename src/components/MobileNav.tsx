@@ -1,4 +1,4 @@
-import { LogOut, Menu, Search, Settings, Shield, User, X } from 'lucide-react';
+import { LogOut, Menu, Search, Settings, Shield, Tag, User, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -84,6 +84,14 @@ export default function MobileNav({ user }: Props) {
 										管理画面
 									</a>
 								)}
+								<a
+									href="/tag-requests"
+									className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"
+									onClick={() => setIsOpen(false)}
+								>
+									<Tag size={16} />
+									タグ申請
+								</a>
 								<a
 									href="/settings/profile"
 									className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2"

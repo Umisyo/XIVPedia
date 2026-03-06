@@ -90,6 +90,24 @@ export const reactions = pgTable(
 	(t) => [primaryKey({ columns: [t.articleId, t.userId] })],
 );
 
+// タグ申請
+export const tagRequests = pgTable('tag_requests', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	name: text('name').notNull(),
+	description: text('description').notNull(),
+	category: text('category').notNull(),
+	status: text('status', { enum: ['pending', 'approved', 'rejected'] })
+		.default('pending')
+		.notNull(),
+	requesterId: uuid('requester_id')
+		.references(() => profiles.id)
+		.notNull(),
+	reviewedBy: uuid('reviewed_by').references(() => profiles.id),
+	rejectionReason: text('rejection_reason'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	reviewedAt: timestamp('reviewed_at'),
+});
+
 // 通報
 export const reports = pgTable('reports', {
 	id: uuid('id').defaultRandom().primaryKey(),

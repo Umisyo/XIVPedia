@@ -527,6 +527,111 @@ export function validateUpdateCategory(data: unknown): ValidationResult<UpdateCa
 	return { success: true, data: result };
 }
 
+// Tag request validation
+export interface CreateTagRequestInput {
+	name: string;
+	description: string;
+	category: string;
+}
+
+export interface ReviewTagRequestInput {
+	status: 'approved' | 'rejected';
+	rejectionReason?: string;
+}
+
+export function validateCreateTagRequest(data: unknown): ValidationResult<CreateTagRequestInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// name
+	if (obj.name === undefined || obj.name === null) {
+		errors.name = ['name is required'];
+	} else if (typeof obj.name !== 'string') {
+		errors.name = ['name must be a string'];
+	} else if (obj.name.trim().length < 1 || obj.name.trim().length > 50) {
+		errors.name = ['name must be between 1 and 50 characters'];
+	}
+
+	// description
+	if (obj.description === undefined || obj.description === null) {
+		errors.description = ['description is required'];
+	} else if (typeof obj.description !== 'string') {
+		errors.description = ['description must be a string'];
+	} else if (obj.description.trim().length < 1 || obj.description.trim().length > 500) {
+		errors.description = ['description must be between 1 and 500 characters'];
+	}
+
+	// category
+	if (obj.category === undefined || obj.category === null) {
+		errors.category = ['category is required'];
+	} else if (typeof obj.category !== 'string') {
+		errors.category = ['category must be a string'];
+	} else if (obj.category.trim().length < 1) {
+		errors.category = ['category must not be empty'];
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	return {
+		success: true,
+		data: {
+			name: (obj.name as string).trim(),
+			description: (obj.description as string).trim(),
+			category: (obj.category as string).trim(),
+		},
+	};
+}
+
+const TAG_REQUEST_STATUSES = ['approved', 'rejected'] as const;
+
+export function validateReviewTagRequest(data: unknown): ValidationResult<ReviewTagRequestInput> {
+	if (typeof data !== 'object' || data === null) {
+		return { success: false, errors: { _: ['Request body must be a JSON object'] } };
+	}
+
+	const obj = data as Record<string, unknown>;
+	const errors: Record<string, string[]> = {};
+
+	// status
+	if (obj.status === undefined || obj.status === null) {
+		errors.status = ['status is required'];
+	} else if (typeof obj.status !== 'string') {
+		errors.status = ['status must be a string'];
+	} else if (!(TAG_REQUEST_STATUSES as readonly string[]).includes(obj.status)) {
+		errors.status = ['status must be one of: approved, rejected'];
+	}
+
+	// rejectionReason (optional, required when rejected)
+	if (obj.status === 'rejected') {
+		if (obj.rejectionReason === undefined || obj.rejectionReason === null) {
+			errors.rejectionReason = ['rejectionReason is required when rejecting'];
+		} else if (typeof obj.rejectionReason !== 'string') {
+			errors.rejectionReason = ['rejectionReason must be a string'];
+		} else if (obj.rejectionReason.trim().length < 1 || obj.rejectionReason.trim().length > 500) {
+			errors.rejectionReason = ['rejectionReason must be between 1 and 500 characters'];
+		}
+	}
+
+	if (Object.keys(errors).length > 0) {
+		return { success: false, errors };
+	}
+
+	const result: ReviewTagRequestInput = {
+		status: obj.status as ReviewTagRequestInput['status'],
+	};
+	if (typeof obj.rejectionReason === 'string' && obj.rejectionReason.trim()) {
+		result.rejectionReason = (obj.rejectionReason as string).trim();
+	}
+
+	return { success: true, data: result };
+}
+
 const REPORT_STATUSES = ['resolved', 'dismissed'] as const;
 
 export function validateUpdateReport(data: unknown): ValidationResult<UpdateReportInput> {

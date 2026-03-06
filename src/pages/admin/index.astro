@@ -1,6 +1,7 @@
 ---
 import CategoryManagement from '../../components/admin/CategoryManagement.tsx';
 import TagManagement from '../../components/admin/TagManagement.tsx';
+import TagRequestManagement from '../../components/admin/TagRequestManagement.tsx';
 import UserManagement from '../../components/admin/UserManagement.tsx';
 import Layout from '../../layouts/Layout.astro';
 
@@ -15,6 +16,7 @@ if (!currentUser || currentUser.profile?.role !== 'admin') {
 <Layout title="管理画面">
 	<div class="py-8 max-w-4xl mx-auto space-y-8">
 		<h1 class="text-3xl font-bold text-foreground">管理画面</h1>
+		<TagRequestManagement client:load />
 		<CategoryManagement client:load />
 		<TagManagement client:load />
 		<UserManagement client:load currentUserId={currentUser.id} />

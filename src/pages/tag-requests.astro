@@ -1,0 +1,35 @@
+---
+import TagRequestForm from '../components/tag-requests/TagRequestForm.tsx';
+import TagRequestList from '../components/tag-requests/TagRequestList.tsx';
+import Layout from '../layouts/Layout.astro';
+import { listCategories } from '../lib/categories';
+
+const currentUser = Astro.locals.currentUser;
+
+if (!currentUser?.profile) {
+	return Astro.redirect('/login');
+}
+
+const categories = await listCategories(Astro.locals.db);
+---
+
+<Layout title="タグ申請">
+	<div class="py-8 max-w-2xl mx-auto space-y-8">
+		<div>
+			<h1 class="text-3xl font-bold text-foreground">タグ申請</h1>
+			<p class="mt-2 text-sm text-muted-foreground">
+				欲しいタグがない場合、ここから申請できます。管理者が確認後、承認されたタグが利用可能になります。
+			</p>
+		</div>
+
+		<div class="rounded-lg border border-border bg-card p-6">
+			<h2 class="text-lg font-bold text-foreground mb-4">新しいタグを申請</h2>
+			<TagRequestForm client:load categories={categories} />
+		</div>
+
+		<div>
+			<h2 class="text-lg font-bold text-foreground mb-4">申請履歴</h2>
+			<TagRequestList client:load />
+		</div>
+	</div>
+</Layout>
