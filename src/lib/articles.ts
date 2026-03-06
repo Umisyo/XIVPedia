@@ -10,6 +10,7 @@ export interface ListArticlesOptions {
 	patch?: string;
 	status?: 'draft' | 'published' | 'archived';
 	sort?: 'newest' | 'popular';
+	authorId?: string;
 	skipCount?: boolean;
 	excludeBody?: boolean;
 }
@@ -108,6 +109,10 @@ export async function listArticles(db: Database, options: ListArticlesOptions = 
 		} else {
 			conditions.push(eq(articles.patch, options.patch));
 		}
+	}
+
+	if (options.authorId) {
+		conditions.push(eq(articles.authorId, options.authorId));
 	}
 
 	if (options.tag) {
