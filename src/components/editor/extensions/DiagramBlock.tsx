@@ -1,6 +1,7 @@
 import CodeBlock from '@tiptap/extension-code-block';
 import type { NodeViewProps } from '@tiptap/react';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
+import DOMPurify from 'dompurify';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { DiagramModal } from '@/components/diagram/DiagramModal';
@@ -116,8 +117,15 @@ function DiagramNodeView({ node, editor, getPos, selected }: NodeViewProps) {
 					</div>
 				</div>
 				<div className="diagram-preview-body">
-					{/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG is generated from validated DiagramData via parseDiagramJson + renderDiagramSvg; input is JSON-parsed and type-checked, not raw user HTML */}
-					<div className="diagram-container" dangerouslySetInnerHTML={{ __html: svgHtml }} />
+					<div
+						className="diagram-container"
+						// biome-ignore lint/security/noDangerouslySetInnerHtml: SVG is sanitized with DOMPurify before injection
+						dangerouslySetInnerHTML={{
+							__html: DOMPurify.sanitize(svgHtml, {
+								USE_PROFILES: { svg: true, svgFilters: true },
+							}),
+						}}
+					/>
 				</div>
 			</div>
 			{editing && (
