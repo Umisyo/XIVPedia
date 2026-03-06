@@ -82,10 +82,7 @@ export default function TagRequestList() {
 			{requests.map((req) => {
 				const statusInfo = STATUS_LABELS[req.status] ?? STATUS_LABELS.pending;
 				return (
-					<div
-						key={req.id}
-						className="rounded-md border border-border bg-card p-4 space-y-2"
-					>
+					<div key={req.id} className="rounded-md border border-border bg-card p-4 space-y-2">
 						<div className="flex items-center justify-between">
 							<h3 className="text-sm font-medium text-foreground">{req.name}</h3>
 							<span

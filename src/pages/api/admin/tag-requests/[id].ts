@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { eq } from 'drizzle-orm';
 import { tags } from '../../../../db/schema';
+import { listCategorySlugs } from '../../../../lib/categories';
 import {
 	errorResponse,
 	forbidden,
@@ -8,7 +9,6 @@ import {
 	unauthorized,
 	validationError,
 } from '../../../../lib/errors';
-import { listCategorySlugs } from '../../../../lib/categories';
 import { getTagRequestById, reviewTagRequest } from '../../../../lib/tag-requests';
 import { createTag, generateTagSlug } from '../../../../lib/tags';
 import { validateReviewTagRequest } from '../../../../lib/validation';

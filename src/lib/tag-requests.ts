@@ -1,6 +1,6 @@
-import { desc, eq, and } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { Database } from '../db';
-import { tagRequests, profiles } from '../db/schema';
+import { profiles, tagRequests } from '../db/schema';
 
 export interface TagRequestInfo {
 	id: string;
@@ -97,10 +97,7 @@ export async function listAllTagRequests(
 	}));
 }
 
-export async function getTagRequestById(
-	db: Database,
-	id: string,
-): Promise<TagRequestInfo | null> {
+export async function getTagRequestById(db: Database, id: string): Promise<TagRequestInfo | null> {
 	const [row] = await db
 		.select({
 			id: tagRequests.id,
@@ -152,10 +149,7 @@ export async function reviewTagRequest(
 	};
 }
 
-export async function checkDuplicateTagRequest(
-	db: Database,
-	name: string,
-): Promise<boolean> {
+export async function checkDuplicateTagRequest(db: Database, name: string): Promise<boolean> {
 	const [row] = await db
 		.select({ id: tagRequests.id })
 		.from(tagRequests)

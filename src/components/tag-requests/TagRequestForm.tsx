@@ -89,9 +89,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 					maxLength={50}
 					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
 				/>
-				{errors.name && (
-					<p className="text-xs text-destructive">{errors.name[0]}</p>
-				)}
+				{errors.name && <p className="text-xs text-destructive">{errors.name[0]}</p>}
 			</div>
 
 			<div className="space-y-2">
@@ -110,9 +108,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 						</option>
 					))}
 				</select>
-				{errors.category && (
-					<p className="text-xs text-destructive">{errors.category[0]}</p>
-				)}
+				{errors.category && <p className="text-xs text-destructive">{errors.category[0]}</p>}
 			</div>
 
 			<div className="space-y-2">
@@ -129,9 +125,7 @@ export default function TagRequestForm({ categories }: TagRequestFormProps) {
 					className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none"
 				/>
 				<p className="text-xs text-muted-foreground">{description.length}/500</p>
-				{errors.description && (
-					<p className="text-xs text-destructive">{errors.description[0]}</p>
-				)}
+				{errors.description && <p className="text-xs text-destructive">{errors.description[0]}</p>}
 			</div>
 
 			<button

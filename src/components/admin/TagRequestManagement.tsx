@@ -89,7 +89,9 @@ export default function TagRequestManagement() {
 			});
 			if (!res.ok) {
 				const json = await res.json().catch(() => null);
-				throw new Error(json?.error?.message ?? json?.error?.details?._?.[0] ?? '承認に失敗しました');
+				throw new Error(
+					json?.error?.message ?? json?.error?.details?._?.[0] ?? '承認に失敗しました',
+				);
 			}
 			setRequests((prev) => prev.filter((r) => r.id !== id));
 			setToast({ message: 'タグ申請を承認し、タグを作成しました', type: 'success' });
@@ -165,9 +167,7 @@ export default function TagRequestManagement() {
 
 			<div className="rounded-lg border border-border bg-card">
 				<div className="border-b border-border px-4 py-3 flex items-center justify-between">
-					<h2 className="text-lg font-bold text-foreground">
-						タグ申請管理 ({requests.length}件)
-					</h2>
+					<h2 className="text-lg font-bold text-foreground">タグ申請管理 ({requests.length}件)</h2>
 					<div className="flex gap-1">
 						{['pending', 'approved', 'rejected', ''].map((s) => (
 							<button
@@ -180,7 +180,13 @@ export default function TagRequestManagement() {
 										: 'text-muted-foreground hover:bg-muted'
 								}`}
 							>
-								{s === 'pending' ? '審査中' : s === 'approved' ? '承認済み' : s === 'rejected' ? '却下' : 'すべて'}
+								{s === 'pending'
+									? '審査中'
+									: s === 'approved'
+										? '承認済み'
+										: s === 'rejected'
+											? '却下'
+											: 'すべて'}
 							</button>
 						))}
 					</div>

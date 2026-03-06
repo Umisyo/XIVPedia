@@ -1,8 +1,8 @@
 import type { APIContext } from 'astro';
 import { eq } from 'drizzle-orm';
 import { tags } from '../../../db/schema';
-import { errorResponse, unauthorized, validationError } from '../../../lib/errors';
 import { listCategorySlugs } from '../../../lib/categories';
+import { errorResponse, unauthorized, validationError } from '../../../lib/errors';
 import {
 	checkDuplicateTagRequest,
 	createTagRequest,
