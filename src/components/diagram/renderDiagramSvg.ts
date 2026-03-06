@@ -92,7 +92,7 @@ function renderMarker(role: string, nx: number, ny: number): string {
 
 export function renderDiagramSvg(data: DiagramData): string {
 	const parts: string[] = [
-		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SVG_SIZE} ${SVG_SIZE}" width="100%" height="100%">`,
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SVG_SIZE} ${SVG_SIZE}" width="100%">`,
 		renderBackground(),
 		renderField(),
 		renderCrossLines(),
