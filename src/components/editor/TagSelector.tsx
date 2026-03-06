@@ -15,7 +15,7 @@ interface TagSelectorProps {
 	categories?: CategoryLabel[];
 }
 
-const VISIBLE_COUNT = 5;
+const VISIBLE_THRESHOLD = 5;
 
 export function TagSelector({ tags, selectedIds, onChange, categories }: TagSelectorProps) {
 	const categoryLabels = new Map(categories?.map((c) => [c.slug, c.name]) ?? []);
@@ -73,9 +73,15 @@ function CategoryTagGroup({
 	onToggle,
 }: CategoryTagGroupProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const hasMore = categoryTags.length > VISIBLE_COUNT;
-	const visibleTags = hasMore ? categoryTags.slice(0, VISIBLE_COUNT) : categoryTags;
-	const hiddenCount = categoryTags.length - VISIBLE_COUNT;
+	const hasMore = categoryTags.length > VISIBLE_THRESHOLD;
+
+	// Show first 5 tags + any selected tags beyond the first 5
+	const visibleTags = hasMore
+		? categoryTags.filter((tag, index) => index < VISIBLE_THRESHOLD || selectedIds.includes(tag.id))
+		: categoryTags;
+
+	// Count tags not shown in the visible area
+	const hiddenCount = hasMore ? categoryTags.length - visibleTags.length : 0;
 
 	return (
 		<div>
@@ -96,7 +102,7 @@ function CategoryTagGroup({
 						onClick={() => setIsModalOpen(true)}
 						className="rounded-md px-2.5 py-1 text-xs transition-colors bg-secondary text-muted-foreground hover:bg-secondary/80 border border-dashed border-muted-foreground/30"
 					>
-						さらに表示（+{hiddenCount}）
+						さらに表示{hiddenCount > 0 ? `（+${hiddenCount}）` : ''}
 					</button>
 				)}
 			</div>
@@ -147,65 +153,72 @@ interface TagModalProps {
 }
 
 function TagModal({ categoryName, categoryTags, selectedIds, onToggle, onClose }: TagModalProps) {
-	const overlayRef = useRef<HTMLDivElement>(null);
+	const dialogRef = useRef<HTMLDialogElement>(null);
 
 	useEffect(() => {
-		function handleKeyDown(e: KeyboardEvent) {
-			if (e.key === 'Escape') onClose();
+		const dialog = dialogRef.current;
+		if (dialog && !dialog.open) {
+			dialog.showModal();
 		}
-		document.addEventListener('keydown', handleKeyDown);
-		return () => document.removeEventListener('keydown', handleKeyDown);
-	}, [onClose]);
+		return () => {
+			if (dialog?.open) {
+				dialog.close();
+			}
+		};
+	}, []);
 
-	function handleOverlayClick(e: React.MouseEvent) {
-		if (e.target === overlayRef.current) onClose();
+	function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
+		if (e.target === dialogRef.current) {
+			onClose();
+		}
 	}
 
 	return (
-		<div
-			ref={overlayRef}
-			role="dialog"
-			aria-modal="true"
-			aria-label={`${categoryName}のタグを選択`}
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-			onClick={handleOverlayClick}
+		<dialog
+			ref={dialogRef}
+			onClick={handleBackdropClick}
 			onKeyDown={(e) => {
 				if (e.key === 'Escape') onClose();
 			}}
+			onClose={onClose}
+			aria-label={`${categoryName}のタグを選択`}
+			className="fixed inset-0 z-50 m-auto w-full max-w-md rounded-lg border border-border bg-card p-0 text-foreground shadow-lg backdrop:bg-black/50"
 		>
-			<div className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg mx-4">
-				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-semibold">{categoryName}</h3>
+			<div className="flex flex-col">
+				<div className="flex items-center justify-between border-b border-border px-4 py-3">
+					<h3 className="text-sm font-semibold">{categoryName}</h3>
 					<button
 						type="button"
 						onClick={onClose}
 						className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
 						aria-label="閉じる"
 					>
-						<X className="h-5 w-5" />
+						<X className="h-4 w-4" />
 					</button>
 				</div>
-				<div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto">
-					{categoryTags.map((tag) => (
-						<TagButton
-							key={tag.id}
-							tag={tag}
-							isSelected={selectedIds.includes(tag.id)}
-							disabled={!selectedIds.includes(tag.id) && selectedIds.length >= 10}
-							onToggle={onToggle}
-						/>
-					))}
+				<div className="overflow-y-auto p-4 max-h-64">
+					<div className="flex flex-wrap gap-2">
+						{categoryTags.map((tag) => (
+							<TagButton
+								key={tag.id}
+								tag={tag}
+								isSelected={selectedIds.includes(tag.id)}
+								disabled={!selectedIds.includes(tag.id) && selectedIds.length >= 10}
+								onToggle={onToggle}
+							/>
+						))}
+					</div>
 				</div>
-				<div className="flex justify-end mt-4">
+				<div className="flex justify-end border-t border-border px-4 py-3">
 					<button
 						type="button"
 						onClick={onClose}
-						className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+						className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
 					>
 						完了
 					</button>
 				</div>
 			</div>
-		</div>
+		</dialog>
 	);
 }
