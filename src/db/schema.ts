@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
@@ -27,7 +27,9 @@ export const tags = pgTable('tags', {
 	name: text('name').notNull().unique(),
 	slug: text('slug').notNull().unique(),
 	category: text('category').notNull(),
-});
+}, (t) => [
+	index('tags_category_idx').on(t.category),
+]);
 
 // 記事
 export const articles = pgTable('articles', {
@@ -45,7 +47,11 @@ export const articles = pgTable('articles', {
 	publishedAt: timestamp('published_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (t) => [
+	index('articles_status_published_at_idx').on(t.status, t.publishedAt),
+	index('articles_status_created_at_idx').on(t.status, t.createdAt),
+	index('articles_author_id_idx').on(t.authorId),
+]);
 
 // 記事-タグ 中間テーブル
 export const articleTags = pgTable(
@@ -58,7 +64,10 @@ export const articleTags = pgTable(
 			.references(() => tags.id, { onDelete: 'cascade' })
 			.notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.articleId, t.tagId] })],
+	(t) => [
+		primaryKey({ columns: [t.articleId, t.tagId] }),
+		index('article_tags_tag_id_idx').on(t.tagId),
+	],
 );
 
 // コメント
@@ -73,7 +82,9 @@ export const comments = pgTable('comments', {
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (t) => [
+	index('comments_article_id_idx').on(t.articleId),
+]);
 
 // リアクション（👍）
 export const reactions = pgTable(
@@ -87,7 +98,10 @@ export const reactions = pgTable(
 			.notNull(),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.articleId, t.userId] })],
+	(t) => [
+		primaryKey({ columns: [t.articleId, t.userId] }),
+		index('reactions_article_id_idx').on(t.articleId),
+	],
 );
 
 // タグ申請
@@ -106,7 +120,9 @@ export const tagRequests = pgTable('tag_requests', {
 	rejectionReason: text('rejection_reason'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	reviewedAt: timestamp('reviewed_at'),
-});
+}, (t) => [
+	index('tag_requests_status_idx').on(t.status),
+]);
 
 // 通報
 export const reports = pgTable('reports', {
@@ -126,4 +142,7 @@ export const reports = pgTable('reports', {
 	resolvedBy: uuid('resolved_by').references(() => profiles.id),
 	resolvedAt: timestamp('resolved_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (t) => [
+	index('reports_status_idx').on(t.status),
+	index('reports_target_idx').on(t.targetType, t.targetId),
+]);
