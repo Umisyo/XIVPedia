@@ -7,8 +7,8 @@ export async function GET(context: APIContext): Promise<Response> {
 	const { db, currentUser } = context.locals;
 	const params = context.url.searchParams;
 
-	const page = Number(params.get('page') ?? '1');
-	const limit = Number(params.get('limit') ?? '20');
+	const page = Math.max(1, Math.min(100, Number(params.get('page') ?? '1') || 1));
+	const limit = Math.max(1, Math.min(100, Number(params.get('limit') ?? '20') || 20));
 	const tag = params.get('tag') ?? undefined;
 	const validStatuses = ['draft', 'published', 'archived'] as const;
 	const rawStatus = params.get('status');
@@ -18,8 +18,15 @@ export async function GET(context: APIContext): Promise<Response> {
 		status = rawStatus as (typeof validStatuses)[number];
 	}
 
-	if (status && !currentUser) {
-		status = 'published';
+	if (status !== 'published' && status !== undefined) {
+		if (!currentUser) {
+			status = 'published';
+		}
+	}
+
+	let authorId: string | undefined;
+	if (status && status !== 'published' && currentUser?.profile?.role !== 'admin') {
+		authorId = currentUser?.id;
 	}
 
 	const validSorts = ['newest', 'popular'] as const;
@@ -31,7 +38,7 @@ export async function GET(context: APIContext): Promise<Response> {
 
 	const patch = params.get('patch') ?? undefined;
 
-	const result = await listArticles(db, { page, limit, tag, patch, status, sort });
+	const result = await listArticles(db, { page, limit, tag, patch, status, sort, authorId });
 
 	return new Response(JSON.stringify(result), {
 		status: 200,
