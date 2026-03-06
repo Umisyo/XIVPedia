@@ -1,7 +1,6 @@
 import type { Editor } from '@tiptap/react';
 import {
 	Bold,
-	Code,
 	Gamepad2,
 	Grid2x2,
 	Heading1,
@@ -145,14 +144,6 @@ export function EditorToolbar({ editor, onInsertMacro, onOpenDiagram }: EditorTo
 			>
 				<Quote className="h-4 w-4" />
 			</ToolbarButton>
-			<ToolbarButton
-				onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-				active={editor.isActive('codeBlock')}
-				tooltip="コードブロック"
-			>
-				<Code className="h-4 w-4" />
-			</ToolbarButton>
-
 			<ToolbarSeparator />
 
 			<ToolbarButton onClick={toggleLink} active={editor.isActive('link')} tooltip="リンクを挿入">
