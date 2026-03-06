@@ -3,6 +3,7 @@ import {
 	Bold,
 	Code,
 	Gamepad2,
+	Grid2x2,
 	Heading1,
 	Heading2,
 	Heading3,
@@ -14,19 +15,21 @@ import {
 	Redo,
 	Undo,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface EditorToolbarProps {
 	editor: Editor;
 	onInsertMacro: (macro: string) => void;
+	onOpenDiagram?: () => void;
 }
 
-export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onInsertMacro, onOpenDiagram }: EditorToolbarProps) {
 	const [linkUrl, setLinkUrl] = useState('');
 	const [showLinkInput, setShowLinkInput] = useState(false);
 	const [showMacroDialog, setShowMacroDialog] = useState(false);
 	const [macroText, setMacroText] = useState('');
+	const savedSelectionRef = useRef<{ from: number; to: number } | null>(null);
 
 	const macroLineCount = macroText ? macroText.split('\n').length : 0;
 
@@ -49,20 +52,29 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 			editor.chain().focus().unsetLink().run();
 			return;
 		}
+		const { from, to } = editor.state.selection;
+		savedSelectionRef.current = { from, to };
 		setShowLinkInput(true);
 	}, [editor]);
 
 	const applyLink = useCallback(() => {
 		if (linkUrl && /^(https?:\/\/|mailto:)/i.test(linkUrl)) {
-			editor.chain().focus().setLink({ href: linkUrl }).run();
+			const chain = editor.chain().focus();
+			if (savedSelectionRef.current) {
+				const { from, to } = savedSelectionRef.current;
+				chain.setTextSelection({ from, to });
+			}
+			chain.setLink({ href: linkUrl }).run();
 		}
 		setLinkUrl('');
 		setShowLinkInput(false);
+		savedSelectionRef.current = null;
 	}, [editor, linkUrl]);
 
 	const cancelLink = useCallback(() => {
 		setLinkUrl('');
 		setShowLinkInput(false);
+		savedSelectionRef.current = null;
 		editor.chain().focus().run();
 	}, [editor]);
 
@@ -71,21 +83,21 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
 				active={editor.isActive('heading', { level: 1 })}
-				title="見出し1"
+				tooltip="見出し1"
 			>
 				<Heading1 className="h-4 w-4" />
 			</ToolbarButton>
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
 				active={editor.isActive('heading', { level: 2 })}
-				title="見出し2"
+				tooltip="見出し2"
 			>
 				<Heading2 className="h-4 w-4" />
 			</ToolbarButton>
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
 				active={editor.isActive('heading', { level: 3 })}
-				title="見出し3"
+				tooltip="見出し3"
 			>
 				<Heading3 className="h-4 w-4" />
 			</ToolbarButton>
@@ -95,14 +107,14 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleBold().run()}
 				active={editor.isActive('bold')}
-				title="太字"
+				tooltip="太字"
 			>
 				<Bold className="h-4 w-4" />
 			</ToolbarButton>
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleItalic().run()}
 				active={editor.isActive('italic')}
-				title="斜体"
+				tooltip="斜体"
 			>
 				<Italic className="h-4 w-4" />
 			</ToolbarButton>
@@ -112,14 +124,14 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleBulletList().run()}
 				active={editor.isActive('bulletList')}
-				title="箇条書き"
+				tooltip="箇条書き"
 			>
 				<List className="h-4 w-4" />
 			</ToolbarButton>
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleOrderedList().run()}
 				active={editor.isActive('orderedList')}
-				title="番号付きリスト"
+				tooltip="番号付きリスト"
 			>
 				<ListOrdered className="h-4 w-4" />
 			</ToolbarButton>
@@ -129,26 +141,35 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleBlockquote().run()}
 				active={editor.isActive('blockquote')}
-				title="引用"
+				tooltip="引用"
 			>
 				<Quote className="h-4 w-4" />
 			</ToolbarButton>
 			<ToolbarButton
 				onClick={() => editor.chain().focus().toggleCodeBlock().run()}
 				active={editor.isActive('codeBlock')}
-				title="コードブロック"
+				tooltip="コードブロック"
 			>
 				<Code className="h-4 w-4" />
 			</ToolbarButton>
 
 			<ToolbarSeparator />
 
-			<ToolbarButton onClick={() => setShowMacroDialog(true)} active={false} title="マクロ挿入">
+			<ToolbarButton
+				onClick={() => setShowMacroDialog(true)}
+				active={false}
+				tooltip="FF14マクロを挿入"
+			>
 				<Gamepad2 className="h-4 w-4" />
 			</ToolbarButton>
-			<ToolbarButton onClick={toggleLink} active={editor.isActive('link')} title="リンク">
+			<ToolbarButton onClick={toggleLink} active={editor.isActive('link')} tooltip="リンクを挿入">
 				<Link className="h-4 w-4" />
 			</ToolbarButton>
+			{onOpenDiagram && (
+				<ToolbarButton onClick={onOpenDiagram} active={false} tooltip="散開図を作成">
+					<Grid2x2 className="h-4 w-4" />
+				</ToolbarButton>
+			)}
 
 			<ToolbarSeparator />
 
@@ -156,7 +177,7 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 				onClick={() => editor.chain().focus().undo().run()}
 				active={false}
 				disabled={!editor.can().undo()}
-				title="元に戻す"
+				tooltip="元に戻す"
 			>
 				<Undo className="h-4 w-4" />
 			</ToolbarButton>
@@ -164,7 +185,7 @@ export function EditorToolbar({ editor, onInsertMacro }: EditorToolbarProps) {
 				onClick={() => editor.chain().focus().redo().run()}
 				active={false}
 				disabled={!editor.can().redo()}
-				title="やり直す"
+				tooltip="やり直す"
 			>
 				<Redo className="h-4 w-4" />
 			</ToolbarButton>
@@ -237,29 +258,33 @@ function ToolbarButton({
 	onClick,
 	active,
 	disabled,
-	title,
+	tooltip,
 	children,
 }: {
 	onClick: () => void;
 	active: boolean;
 	disabled?: boolean;
-	title: string;
+	tooltip: string;
 	children: React.ReactNode;
 }) {
 	return (
-		<button
-			type="button"
-			onClick={onClick}
-			disabled={disabled}
-			title={title}
-			className={`inline-flex items-center justify-center rounded p-1.5 text-sm transition-colors disabled:opacity-40 ${
-				active
-					? 'bg-secondary text-foreground'
-					: 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-			}`}
-		>
-			{children}
-		</button>
+		<div className="group relative">
+			<button
+				type="button"
+				onClick={onClick}
+				disabled={disabled}
+				className={`inline-flex items-center justify-center rounded p-1.5 text-sm transition-colors disabled:opacity-40 ${
+					active
+						? 'bg-secondary text-foreground'
+						: 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+				}`}
+			>
+				{children}
+			</button>
+			<span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md border border-border opacity-0 transition-opacity group-hover:opacity-100">
+				{tooltip}
+			</span>
+		</div>
 	);
 }
 

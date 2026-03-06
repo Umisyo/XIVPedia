@@ -51,7 +51,7 @@ function MacroPreview({ node, editor, getPos }: Pick<NodeViewProps, 'node' | 'ed
 			.chain()
 			.command(({ tr, dispatch }) => {
 				if (dispatch) {
-					const newNode = editor.schema.nodes.codeBlock.create(
+					const newNode = editor.schema.nodes.macroCodeBlock.create(
 						{ language: 'ffxiv-macro' },
 						trimmed ? editor.schema.text(trimmed) : undefined,
 					);
