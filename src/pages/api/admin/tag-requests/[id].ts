@@ -57,9 +57,9 @@ export async function PATCH(context: APIContext): Promise<Response> {
 				return validationError({ _: ['申請されたカテゴリが存在しません'] });
 			}
 
-			const slug = generateTagSlug(existing.name);
+			const slug = result.data.slug || generateTagSlug(existing.name);
 			if (!slug) {
-				return validationError({ _: ['スラグを生成できません'] });
+				return validationError({ _: ['スラグを生成できません。手動で指定してください'] });
 			}
 
 			// 同名タグの最終チェック
