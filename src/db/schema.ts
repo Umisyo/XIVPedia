@@ -1,4 +1,13 @@
-import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uuid,
+} from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
