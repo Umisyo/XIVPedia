@@ -350,7 +350,6 @@
 .diagram-container {
 	max-width: 400px;
 	margin: 1.25rem auto;
-	aspect-ratio: 1 / 1;
 }
 .diagram-container svg {
 	width: 100%;
