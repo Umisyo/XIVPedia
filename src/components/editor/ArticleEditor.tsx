@@ -156,15 +156,6 @@ export function ArticleEditor({ mode, tags, categories, article }: ArticleEditor
 				<p className="text-xs text-muted-foreground text-right">{title.length}/100</p>
 			</div>
 
-			{/* Tags */}
-			<TagSelector
-				tags={tags}
-				selectedIds={selectedTags}
-				onChange={setSelectedTags}
-				categories={categories}
-			/>
-			{errors.tags && <p className="text-sm text-destructive">{errors.tags[0]}</p>}
-
 			{/* Patch */}
 			<div className="space-y-2">
 				<Label>パッチバージョン</Label>
@@ -326,6 +317,15 @@ export function ArticleEditor({ mode, tags, categories, article }: ArticleEditor
 					<ImageUploader onInsert={handleImageInsert} />
 				</div>
 			)}
+
+			{/* Tags */}
+			<TagSelector
+				tags={tags}
+				selectedIds={selectedTags}
+				onChange={setSelectedTags}
+				categories={categories}
+			/>
+			{errors.tags && <p className="text-sm text-destructive">{errors.tags[0]}</p>}
 
 			{showMacroDialogMd && (
 				<div
