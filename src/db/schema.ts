@@ -1,4 +1,13 @@
-import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uuid,
+} from 'drizzle-orm/pg-core';
 
 // ユーザープロフィール（Supabase auth.users と連携）
 export const profiles = pgTable('profiles', {
@@ -22,30 +31,42 @@ export const tagCategories = pgTable('tag_categories', {
 });
 
 // タグ（FF14コンテンツカテゴリ）
-export const tags = pgTable('tags', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	name: text('name').notNull().unique(),
-	slug: text('slug').notNull().unique(),
-	category: text('category').notNull(),
-});
+export const tags = pgTable(
+	'tags',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		name: text('name').notNull().unique(),
+		slug: text('slug').notNull().unique(),
+		category: text('category').notNull(),
+	},
+	(t) => [index('tags_category_idx').on(t.category)],
+);
 
 // 記事
-export const articles = pgTable('articles', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	title: text('title').notNull(),
-	slug: text('slug').notNull().unique(),
-	body: text('body').notNull(),
-	authorId: uuid('author_id')
-		.references(() => profiles.id)
-		.notNull(),
-	status: text('status', { enum: ['draft', 'published', 'archived'] })
-		.default('draft')
-		.notNull(),
-	patch: text('patch'),
-	publishedAt: timestamp('published_at'),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const articles = pgTable(
+	'articles',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		title: text('title').notNull(),
+		slug: text('slug').notNull().unique(),
+		body: text('body').notNull(),
+		authorId: uuid('author_id')
+			.references(() => profiles.id)
+			.notNull(),
+		status: text('status', { enum: ['draft', 'published', 'archived'] })
+			.default('draft')
+			.notNull(),
+		patch: text('patch'),
+		publishedAt: timestamp('published_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	},
+	(t) => [
+		index('articles_status_published_at_idx').on(t.status, t.publishedAt),
+		index('articles_status_created_at_idx').on(t.status, t.createdAt),
+		index('articles_author_id_idx').on(t.authorId),
+	],
+);
 
 // 記事-タグ 中間テーブル
 export const articleTags = pgTable(
@@ -58,22 +79,29 @@ export const articleTags = pgTable(
 			.references(() => tags.id, { onDelete: 'cascade' })
 			.notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.articleId, t.tagId] })],
+	(t) => [
+		primaryKey({ columns: [t.articleId, t.tagId] }),
+		index('article_tags_tag_id_idx').on(t.tagId),
+	],
 );
 
 // コメント
-export const comments = pgTable('comments', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	body: text('body').notNull(),
-	articleId: uuid('article_id')
-		.references(() => articles.id, { onDelete: 'cascade' })
-		.notNull(),
-	authorId: uuid('author_id')
-		.references(() => profiles.id)
-		.notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const comments = pgTable(
+	'comments',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		body: text('body').notNull(),
+		articleId: uuid('article_id')
+			.references(() => articles.id, { onDelete: 'cascade' })
+			.notNull(),
+		authorId: uuid('author_id')
+			.references(() => profiles.id)
+			.notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	},
+	(t) => [index('comments_article_id_idx').on(t.articleId)],
+);
 
 // リアクション（👍）
 export const reactions = pgTable(
@@ -87,7 +115,10 @@ export const reactions = pgTable(
 			.notNull(),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 	},
-	(t) => [primaryKey({ columns: [t.articleId, t.userId] })],
+	(t) => [
+		primaryKey({ columns: [t.articleId, t.userId] }),
+		index('reactions_article_id_idx').on(t.articleId),
+	],
 );
 
 // ブックマーク（お気に入り）
@@ -106,22 +137,26 @@ export const bookmarks = pgTable(
 );
 
 // タグ申請
-export const tagRequests = pgTable('tag_requests', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	name: text('name').notNull(),
-	description: text('description').notNull(),
-	category: text('category').notNull(),
-	status: text('status', { enum: ['pending', 'approved', 'rejected'] })
-		.default('pending')
-		.notNull(),
-	requesterId: uuid('requester_id')
-		.references(() => profiles.id)
-		.notNull(),
-	reviewedBy: uuid('reviewed_by').references(() => profiles.id),
-	rejectionReason: text('rejection_reason'),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	reviewedAt: timestamp('reviewed_at'),
-});
+export const tagRequests = pgTable(
+	'tag_requests',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		name: text('name').notNull(),
+		description: text('description').notNull(),
+		category: text('category').notNull(),
+		status: text('status', { enum: ['pending', 'approved', 'rejected'] })
+			.default('pending')
+			.notNull(),
+		requesterId: uuid('requester_id')
+			.references(() => profiles.id)
+			.notNull(),
+		reviewedBy: uuid('reviewed_by').references(() => profiles.id),
+		rejectionReason: text('rejection_reason'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		reviewedAt: timestamp('reviewed_at'),
+	},
+	(t) => [index('tag_requests_status_idx').on(t.status)],
+);
 
 // 通知
 export const notifications = pgTable('notifications', {
@@ -139,21 +174,28 @@ export const notifications = pgTable('notifications', {
 });
 
 // 通報
-export const reports = pgTable('reports', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	reason: text('reason', {
-		enum: ['spam', 'inappropriate', 'misleading', 'other'],
-	}).notNull(),
-	description: text('description'),
-	targetType: text('target_type', { enum: ['article', 'comment'] }).notNull(),
-	targetId: uuid('target_id').notNull(),
-	reporterId: uuid('reporter_id')
-		.references(() => profiles.id)
-		.notNull(),
-	status: text('status', { enum: ['pending', 'resolved', 'dismissed'] })
-		.default('pending')
-		.notNull(),
-	resolvedBy: uuid('resolved_by').references(() => profiles.id),
-	resolvedAt: timestamp('resolved_at'),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+export const reports = pgTable(
+	'reports',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		reason: text('reason', {
+			enum: ['spam', 'inappropriate', 'misleading', 'other'],
+		}).notNull(),
+		description: text('description'),
+		targetType: text('target_type', { enum: ['article', 'comment'] }).notNull(),
+		targetId: uuid('target_id').notNull(),
+		reporterId: uuid('reporter_id')
+			.references(() => profiles.id)
+			.notNull(),
+		status: text('status', { enum: ['pending', 'resolved', 'dismissed'] })
+			.default('pending')
+			.notNull(),
+		resolvedBy: uuid('resolved_by').references(() => profiles.id),
+		resolvedAt: timestamp('resolved_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+	},
+	(t) => [
+		index('reports_status_idx').on(t.status),
+		index('reports_target_idx').on(t.targetType, t.targetId),
+	],
+);
