@@ -14,58 +14,58 @@ const { title, slug, author, tags, publishedAt, createdAt, reactionCount, patch 
 const displayDate = (publishedAt ?? createdAt).toLocaleDateString('ja-JP');
 ---
 
-<article
-	class="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
->
-	<a href={`/articles/${slug}`} class="block group">
+<a href={`/articles/${slug}`} class="block group">
+	<article
+		class="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors"
+	>
 		<h2
 			class="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2"
 		>
 			{title}
 		</h2>
-	</a>
 
-	<div class="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
-		<div class="flex items-center gap-1.5">
-			{author.avatarUrl ? (
-				<img
-					src={author.avatarUrl}
-					alt={author.displayName}
-					class="w-5 h-5 rounded-full"
-					width="20"
-					height="20"
-					loading="lazy"
-					decoding="async"
-				/>
-			) : (
-				<span class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs">
-					{author.displayName.charAt(0)}
+		<div class="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
+			<div class="flex items-center gap-1.5">
+				{author.avatarUrl ? (
+					<img
+						src={author.avatarUrl}
+						alt={author.displayName}
+						class="w-5 h-5 rounded-full"
+						width="20"
+						height="20"
+						loading="lazy"
+						decoding="async"
+					/>
+				) : (
+					<span class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-xs">
+						{author.displayName.charAt(0)}
+					</span>
+				)}
+				<span>{author.displayName}</span>
+			</div>
+			<time datetime={(publishedAt ?? createdAt).toISOString()}>
+				{displayDate}
+			</time>
+			{reactionCount != null && reactionCount > 0 && (
+				<span class="ml-auto flex items-center gap-1">
+					👍 {reactionCount}
 				</span>
 			)}
-			<span>{author.displayName}</span>
 		</div>
-		<time datetime={(publishedAt ?? createdAt).toISOString()}>
-			{displayDate}
-		</time>
-		{reactionCount != null && reactionCount > 0 && (
-			<span class="ml-auto flex items-center gap-1">
-				👍 {reactionCount}
-			</span>
+
+		{(tags.length > 0 || patch) && (
+			<div class="mt-3 flex flex-wrap gap-2">
+				{patch && (
+					<span class="inline-block rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">
+						Patch {patch}
+					</span>
+				)}
+				{tags.map((tag) => (
+					<span class="inline-block rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+						{tag.name}
+					</span>
+				))}
+			</div>
 		)}
-	</div>
-
-	{(tags.length > 0 || patch) && (
-		<div class="mt-3 flex flex-wrap gap-2">
-			{patch && (
-				<span class="inline-block rounded-md bg-primary/10 text-primary px-2 py-0.5 text-xs font-medium">
-					Patch {patch}
-				</span>
-			)}
-			{tags.map((tag) => (
-				<span class="inline-block rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
-					{tag.name}
-				</span>
-			))}
-		</div>
-	)}
-</article>
+	</article>
+</a>
