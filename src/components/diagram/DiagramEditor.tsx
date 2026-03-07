@@ -134,7 +134,7 @@ export function DiagramEditor({ initialData, onChange }: DiagramEditorProps) {
 					onDropWaymark={handleDropWaymark}
 				/>
 			</div>
-			<div className="flex-shrink-0">
+			<div className="min-w-0">
 				<DiagramPalette
 					existingMarkers={data.markers.map((m) => m.role)}
 					existingWaymarks={data.waymarks.map((w) => w.label)}
